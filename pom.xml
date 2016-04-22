@@ -13,7 +13,6 @@
 	<modules>
 		<module>hackaton-glandais-client</module>
 		<module>hackaton-glandais-server</module>
-		<module>hackaton-glandais-server-restexpress</module>
 		<module>hackaton-glandais-es</module>
 	</modules>
 	<properties>
