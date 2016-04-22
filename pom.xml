@@ -13,7 +13,6 @@
 	<modules>
 		<module>hackaton-glandais-client</module>
 		<module>hackaton-glandais-server</module>
-		<module>hackaton-glandais-es</module>
 	</modules>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

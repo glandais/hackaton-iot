@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.boon.core.Sys;
 import org.boon.json.JsonFactory;
@@ -33,6 +33,8 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	public final static Logger LOGGER = LoggerFactory.getLogger(AbstractIOTStoreServer.class);
 
 	protected IndexTreeList<String> lastInsertedStore;
+
+	protected AtomicBoolean doIndex = new AtomicBoolean(false);
 
 	protected Store store;
 
@@ -82,12 +84,17 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 		return summary;
 	}
 
+	@Override
+	protected void index() {
+		doIndex.set(true);
+	}
+
 	private void startPersister() {
 		Thread thread = new Thread(() -> {
 			ExcerptTailer tailerToPersist = queueToPersist.createTailer();
 			tailerToPersist.toEnd();
 			while (true) {
-				if (mem.getSize() > CACHE_SIZE) {
+				if (mem.getSize() > CACHE_SIZE || doIndex.getAndSet(false)) {
 					index(tailerToPersist, null, false);
 					Sys.sleep(1L);
 				} else {
@@ -120,7 +127,7 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 				messages = new ArrayList<>(BATCH_SIZE + 1);
 			}
 			message = tailerToPersist.readText();
-			if (message.equals(precedent)) {
+			if (message != null && message.equals(precedent)) {
 				break;
 			}
 			precedent = message;

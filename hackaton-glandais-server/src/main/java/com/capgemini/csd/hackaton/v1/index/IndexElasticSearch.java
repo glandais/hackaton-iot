@@ -1,4 +1,4 @@
-package com.capgemini.csd.hackaton.server;
+package com.capgemini.csd.hackaton.v1.index;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.boon.IO;
 import org.boon.json.JsonFactory;
-import org.boon.json.ObjectMapper;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -23,8 +22,6 @@ import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.capgemini.csd.hackaton.v1.index.Index;
 
 public class IndexElasticSearch implements Index {
 
@@ -59,14 +56,6 @@ public class IndexElasticSearch implements Index {
 		} else {
 			client.prepareIndex("iot", "message").setSource(json).execute().actionGet();
 		}
-		//		String json = jsonParam.replace("\"id\"", "\"_id\"");
-		//		ListenableActionFuture<IndexResponse> resultat =
-		//		client.prepareIndex("iot", "message").setSource(map).execute();
-		//		try {
-		//			LOGGER.info("" + resultat.get());
-		//		} catch (InterruptedException | ExecutionException e) {
-		//			LOGGER.error("Erreur", e);
-		//		}
 	}
 
 	@Override

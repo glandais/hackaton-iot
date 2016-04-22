@@ -88,14 +88,18 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				result = "OK";
 			} else if (uri.equals("/messages/synthesis")) {
 				result = getSynthese();
-			} else if (uri.equals("/stop")) {
-				close();
+			} else if (uri.equals("/index")) {
+				index();
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("?", e);
 			throw new Exception(e);
 		}
 		return result;
+	}
+
+	protected void index() {
+		// noop
 	}
 
 	protected void close() {
