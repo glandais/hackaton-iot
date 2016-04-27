@@ -10,8 +10,8 @@ public class Main {
 
 	public static void main(String[] args) {
 		CliBuilder<Runnable> builder = Cli.<Runnable> builder("hackaton-glandais").withDefaultCommand(Help.class)
-				.withCommands(Help.class, IOTServerH2.class, IOTServerES.class, IOTServerH2ES.class, IOTServerMem.class,
-						IOTServerNoop.class, ExecutionClient.class);
+				.withCommands(Help.class, IOTServerMapDB.class, IOTServerH2.class, IOTServerES.class,
+						IOTServerH2ES.class, IOTServerMem.class, IOTServerNoop.class, ExecutionClient.class);
 
 		Cli<Runnable> parser = builder.build();
 		parser.parse(args).run();
