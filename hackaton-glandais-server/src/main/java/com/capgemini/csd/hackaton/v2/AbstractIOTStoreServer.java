@@ -85,6 +85,13 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	}
 
 	@Override
+	protected String getSynthese() {
+		String synthese = super.getSynthese();
+		//		doIndex.set(true);
+		return synthese;
+	}
+
+	@Override
 	protected void index() {
 		doIndex.set(true);
 	}

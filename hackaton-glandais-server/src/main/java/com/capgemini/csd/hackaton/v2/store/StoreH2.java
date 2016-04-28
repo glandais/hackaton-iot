@@ -35,7 +35,7 @@ public class StoreH2 implements Store {
 			queryRunner.update("SET AUTOCOMMIT TRUE");
 			queryRunner.update(
 					"CREATE TABLE IF NOT EXISTS MESSAGE (ID VARCHAR(64), TS TIMESTAMP, SENSORTYPE INT, VALUE BIGINT)");
-			queryRunner.update("CREATE INDEX IF NOT EXISTS IDXID ON MESSAGE(ID)");
+			queryRunner.update("CREATE UNIQUE HASH INDEX IF NOT EXISTS IDXID ON MESSAGE(ID)");
 			queryRunner.update("CREATE INDEX IF NOT EXISTS IDXTS ON MESSAGE(TS)");
 			queryRunner.update("CREATE INDEX IF NOT EXISTS IDXST ON MESSAGE(SENSORTYPE)");
 		} catch (Exception e) {

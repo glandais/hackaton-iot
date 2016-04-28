@@ -48,19 +48,15 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	// blocage indexation/calcul de la synthèse
 	protected ReentrantReadWriteLock indexLock = new ReentrantReadWriteLock();
 
+	public void setDossier(String dossier) {
+		this.dossier = dossier;
+	}
+
 	protected Mem mem;
 
 	@Override
 	public void run() {
-		dossier = new File(dossier).getAbsolutePath();
-		LOGGER.info("Dossier : " + dossier);
-
-		// liste de tous les messages
-		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
-
-		mem = getMem();
-
-		init();
+		configure();
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -73,6 +69,18 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		server.start(this, port);
 		LOGGER.info("Serveur démarré");
 		server.awaitTermination();
+	}
+
+	public void configure() {
+		dossier = new File(dossier).getAbsolutePath();
+		LOGGER.info("Dossier : " + dossier);
+
+		// liste de tous les messages
+		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
+
+		mem = getMem();
+
+		init();
 	}
 
 	protected abstract void init();
@@ -92,7 +100,6 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				index();
 			}
 		} catch (RuntimeException e) {
-			LOGGER.error("?", e);
 			throw new Exception(e);
 		}
 		return result;

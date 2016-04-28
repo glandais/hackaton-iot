@@ -1,9 +1,12 @@
 package com.capgemini.csd.hackaton.v2.store;
 
+import java.io.File;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -16,11 +19,18 @@ import com.capgemini.csd.hackaton.v2.Summary;
 
 public class StoreMapDB implements Store {
 
+	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+	private final Lock r = rwl.readLock();
+	private final Lock writeLock = rwl.writeLock();
+
 	private HTreeMap.KeySet<String> ids;
 
 	private BTreeMap<UUID, UUID> map;
 
 	public void init(String dossier) {
+		if (!new File(dossier).exists()) {
+			new File(dossier).mkdirs();
+		}
 		DB db = DBMaker.fileDB(dossier + "/messages").make();
 		ids = db.hashSet("ids", Serializer.STRING).createOrOpen();
 		map = db.treeMap("messages").keySerializer(Serializer.UUID).valueSerializer(Serializer.UUID).createOrOpen();
@@ -33,7 +43,12 @@ public class StoreMapDB implements Store {
 
 	@Override
 	public boolean containsId(String id) {
-		return ids.contains(id);
+		r.lock();
+		try {
+			return ids.contains(id);
+		} finally {
+			r.unlock();
+		}
 	}
 
 	@Override
@@ -41,7 +56,12 @@ public class StoreMapDB implements Store {
 		Map<UUID, UUID> newItems = new IdentityHashMap<>(messages.size());
 		messages.parallelStream().forEach(message -> {
 			String id = (String) message.get("id");
-			ids.add(id);
+			writeLock.lock();
+			try {
+				ids.add(id);
+			} finally {
+				writeLock.unlock();
+			}
 			MemUtil.add(newItems, message, null);
 		});
 		map.putAll(newItems);
