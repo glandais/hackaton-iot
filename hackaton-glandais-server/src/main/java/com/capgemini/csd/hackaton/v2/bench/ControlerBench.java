@@ -26,7 +26,7 @@ public class ControlerBench {
 	public final static Random R = new Random();
 
 	public static void main(String[] args) {
-		//		bench(getNoop());
+		//				bench(getNoop());
 		bench(getMem());
 		//		bench(getES());
 		bench(getH2());
@@ -72,12 +72,12 @@ public class ControlerBench {
 		}
 		stopwatch.stop();
 		LOGGER.info(controler.getClass().getName() + " : total : " + stopwatch.toString());
-		stopwatch.start();
-		try {
-			controler.processRequest("/index", "");
-		} catch (Exception e) {
-			LOGGER.error("Erreur..........", e);
-		}
+		//		stopwatch.start();
+		//		try {
+		//			controler.processRequest("/index", "");
+		//		} catch (Exception e) {
+		//			LOGGER.error("Erreur..........", e);
+		//		}
 	}
 
 	private static Controler getNoop() {
