@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Stream;
 
-import com.capgemini.csd.hackaton.v2.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class MemUtil {
 

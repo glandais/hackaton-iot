@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.MemUtil;
-import com.capgemini.csd.hackaton.v2.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 import net.openhft.koloboke.collect.map.hash.HashObjObjMaps;
 

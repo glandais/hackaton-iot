@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.capgemini.csd.hackaton.v2.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class ChainedStore implements Store {
 

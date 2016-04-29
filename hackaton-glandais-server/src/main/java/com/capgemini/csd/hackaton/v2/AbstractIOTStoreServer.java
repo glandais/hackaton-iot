@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.store.Store;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.TailerDirection;

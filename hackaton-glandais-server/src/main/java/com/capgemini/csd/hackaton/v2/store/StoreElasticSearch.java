@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.v1.index.IndexElasticSearch;
-import com.capgemini.csd.hackaton.v2.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class StoreElasticSearch implements Store {
 

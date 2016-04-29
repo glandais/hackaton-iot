@@ -15,7 +15,7 @@ import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
 import com.capgemini.csd.hackaton.MemUtil;
-import com.capgemini.csd.hackaton.v2.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class StoreMapDB implements Store {
 

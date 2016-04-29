@@ -1,7 +1,6 @@
 package com.capgemini.csd.hackaton.v2;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +9,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.boon.json.JsonFactory;
-import org.boon.json.JsonParserFactory;
-import org.boon.json.JsonSerializerFactory;
-import org.boon.json.implementation.ObjectMapperImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +16,8 @@ import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerNetty;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.v2.synthese.SyntheseJSON;
 
 import io.airlift.airline.Option;
 import io.airlift.airline.OptionType;
@@ -143,12 +141,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			List<Summary> syntheses = new ArrayList<>(summarry.values());
 			List<Map<String, Object>> syntheseMaps = syntheses.stream().map(s -> s.toMap())
 					.collect(Collectors.toList());
-			JsonParserFactory jsonParserFactory = new JsonParserFactory();
-			jsonParserFactory.lax();
-			JsonSerializerFactory serializerFactory = new JsonSerializerFactory();
-			serializerFactory.addTypeSerializer(BigDecimal.class, new BigDecimalSerializer());
-			ObjectMapperImpl om = new ObjectMapperImpl(jsonParserFactory, serializerFactory);
-			return om.toJson(syntheseMaps);
+			return SyntheseJSON.getObjectMapper().toJson(syntheseMaps);
 		} finally {
 			indexLock.readLock().unlock();
 		}

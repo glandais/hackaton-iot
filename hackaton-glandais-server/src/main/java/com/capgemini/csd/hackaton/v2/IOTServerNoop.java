@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.capgemini.csd.hackaton.v2.mem.Mem;
+import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 import io.airlift.airline.Command;
 

@@ -1,4 +1,4 @@
-package com.capgemini.csd.hackaton.v2;
+package com.capgemini.csd.hackaton.v2.synthese;
 
 import java.math.BigDecimal;
 
