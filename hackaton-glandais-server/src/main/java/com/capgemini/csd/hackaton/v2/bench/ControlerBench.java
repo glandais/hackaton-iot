@@ -19,11 +19,12 @@ import com.capgemini.csd.hackaton.v2.IOTServerH2Mem;
 import com.capgemini.csd.hackaton.v2.IOTServerMapDB;
 import com.capgemini.csd.hackaton.v2.IOTServerMem;
 import com.capgemini.csd.hackaton.v2.IOTServerNoop;
+import com.capgemini.csd.hackaton.v2.IOTServerODB;
 import com.google.common.base.Stopwatch;
 
 public class ControlerBench {
 
-	private static final int MESSAGE_COUNT = 1000000;
+	private static final int MESSAGE_COUNT = 100000;
 
 	private static final int MODULO_SYNTHESE = MESSAGE_COUNT * 2;
 
@@ -36,7 +37,12 @@ public class ControlerBench {
 		//		bench(getMem());
 		//				bench(getES());
 
-		bench(getH2Mem());
+		bench(getODB());
+		bench(getH2());
+
+		bench(getODB());
+		bench(getH2());
+
 		//		bench(getH2());
 
 		//		bench(getH2ES());
@@ -132,6 +138,13 @@ public class ControlerBench {
 
 	private static Controler getH2Mem() {
 		IOTServerH2Mem controler = new IOTServerH2Mem();
+		controler.setDossier(getTmpDossier());
+		controler.configure();
+		return controler;
+	}
+
+	private static Controler getODB() {
+		IOTServerODB controler = new IOTServerODB();
 		controler.setDossier(getTmpDossier());
 		controler.configure();
 		return controler;

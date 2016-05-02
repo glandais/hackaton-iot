@@ -41,8 +41,9 @@ public class StoreBench {
 		//		bench(getStoreES());
 		//		bench(getStoreH2());
 		bench(getStoreODB());
-		bench(getStoreH2());
+		bench(getStoreH2Mem());
 		bench(getStoreODB());
+		bench(getStoreH2Mem());
 		//		bench(getStoreH2());
 		//		bench(getStoreES());
 		//		bench(getStoreH2Mem());
