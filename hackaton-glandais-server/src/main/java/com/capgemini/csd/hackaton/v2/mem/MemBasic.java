@@ -1,5 +1,6 @@
 package com.capgemini.csd.hackaton.v2.mem;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +13,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 import org.boon.core.Sys;
+import org.github.jamm.MemoryMeter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.MemUtil;
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 import net.openhft.koloboke.collect.map.hash.HashObjObjMaps;
@@ -28,7 +30,7 @@ public class MemBasic implements Mem {
 	private final Lock r = rwl.readLock();
 	private final Lock writeLock = rwl.writeLock();
 
-	// messages reçus non stockés par ES
+	// messages reçus non stockés
 	private NavigableMap<UUID, UUID> memoryMap;
 
 	// correspondance id du message/UUID de la memoryMap
@@ -39,6 +41,10 @@ public class MemBasic implements Mem {
 		memoryMap = new TreeMap<>();
 		memoryIds = Collections.synchronizedMap(HashObjObjMaps.newMutableMap());
 		startDaemon(autoClean);
+	}
+
+	public long getMemorySize() {
+		return new MemoryMeter().measureDeep(this);
 	}
 
 	protected void startDaemon(boolean autoClean) {
@@ -123,23 +129,25 @@ public class MemBasic implements Mem {
 	@Override
 	public void index(Map<String, Object> message) {
 		String id = (String) message.get("id");
-		UUID uuid = MemUtil.add(memoryMap, message, writeLock);
+		UUID uuid = Util.add(memoryMap, message, writeLock);
 		memoryIds.replace(id, uuid);
 	}
 
 	@Override
 	public void removeMessages(List<Map<String, Object>> messages) {
+		List<Object> uuids = new ArrayList<>(messages.size());
 		for (int i = 0; i < messages.size(); i++) {
 			Object uuid = memoryIds.remove(messages.get(i).get("id"));
 			if (uuid != null) {
-				write(() -> memoryMap.remove(uuid));
+				uuids.add(uuid);
 			}
 		}
+		write(() -> memoryMap.keySet().removeAll(uuids));
 	}
 
 	@Override
-	public Map<Integer, Summary> getSummary() {
-		return read(() -> MemUtil.getSummary(memoryMap));
+	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
+		return read(() -> Util.getSummary(memoryMap, timestamp, duration));
 	}
 
 	@Override

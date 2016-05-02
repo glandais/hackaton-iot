@@ -14,7 +14,7 @@ import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
-import com.capgemini.csd.hackaton.MemUtil;
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class StoreMapDB implements Store {
@@ -37,8 +37,8 @@ public class StoreMapDB implements Store {
 	}
 
 	@Override
-	public Map<Integer, Summary> getSummary() {
-		return MemUtil.getSummary(map);
+	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
+		return Util.getSummary(map, timestamp, duration);
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class StoreMapDB implements Store {
 			} finally {
 				writeLock.unlock();
 			}
-			MemUtil.add(newItems, message, null);
+			Util.add(newItems, message, null);
 		});
 		map.putAll(newItems);
 	}

@@ -5,6 +5,10 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -13,21 +17,22 @@ import java.util.NavigableMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
-public class MemUtil {
+public class Util {
 
 	// id incrémental, si deux messages avec le même timestamp
 	private static final AtomicLong currentId = new AtomicLong();
 
-	public static final Map<Integer, Summary> getSummary(NavigableMap<UUID, UUID> memoryMap) {
-		long time = System.currentTimeMillis();
-		long lo = time - 3600 * 1000;
-		long hi = time;
+	public static final Map<Integer, Summary> getSummary(NavigableMap<UUID, UUID> memoryMap, long timestamp,
+			Integer duration) {
+		long lo = timestamp;
+		long hi = timestamp + duration * 1000;
 		UUID from = new UUID(lo, 0);
-		UUID to = new UUID(hi, 0);
+		UUID to = new UUID(hi, Long.MAX_VALUE);
 
 		Stream<UUID> stream = memoryMap.subMap(from, to).values().stream();
 
@@ -59,5 +64,29 @@ public class MemUtil {
 		}
 
 		return timeUUID;
+	}
+
+	public static Map<String, List<String>> parse(final String query) {
+		return Arrays.asList(query.split("&")).stream().map(p -> p.split("=")).collect(
+				Collectors.toMap(s -> decode(index(s, 0)), s -> Arrays.asList(decode(index(s, 1))), Util::mergeLists));
+	}
+
+	private static <T> List<T> mergeLists(final List<T> l1, final List<T> l2) {
+		List<T> list = new ArrayList<>();
+		list.addAll(l1);
+		list.addAll(l2);
+		return list;
+	}
+
+	private static <T> T index(final T[] array, final int index) {
+		return index >= array.length ? null : array[index];
+	}
+
+	private static String decode(final String encoded) {
+		try {
+			return encoded == null ? null : URLDecoder.decode(encoded, "UTF-8");
+		} catch (final UnsupportedEncodingException e) {
+			throw new RuntimeException("Impossible: UTF-8 is a required encoding", e);
+		}
 	}
 }

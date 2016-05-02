@@ -45,9 +45,9 @@ public class StoreElasticSearch implements Store {
 	}
 
 	@Override
-	public Map<Integer, Summary> getSummary() {
+	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
 		SearchRequestBuilder search = client.prepareSearch("iot").setTypes("message");
-		search.setQuery(QueryBuilders.rangeQuery("timestamp").from("now-1h").to("now"));
+		search.setQuery(QueryBuilders.rangeQuery("timestamp").from(timestamp).to(timestamp + duration * 1000));
 		search.setSize(0);
 		TermsBuilder groupBy = AggregationBuilders.terms("group_by").field("sensorType");
 		groupBy.subAggregation(AggregationBuilders.count("count").field("value"));

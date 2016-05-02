@@ -17,4 +17,6 @@ public interface Mem extends SummaryComputer {
 
 	long getSize();
 
+	long getMemorySize();
+
 }

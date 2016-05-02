@@ -32,7 +32,7 @@ public class IOTServerNoop extends AbstractIOTServer {
 		return new Mem() {
 
 			@Override
-			public Map<Integer, Summary> getSummary() {
+			public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
 				return Collections.emptyMap();
 			}
 
@@ -55,6 +55,11 @@ public class IOTServerNoop extends AbstractIOTServer {
 
 			@Override
 			public long getSize() {
+				return 0;
+			}
+
+			@Override
+			public long getMemorySize() {
 				return 0;
 			}
 		};

@@ -1,6 +1,7 @@
 package com.capgemini.csd.hackaton.v2.store;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class StoreH2 implements Store {
 		try {
 			queryRunner.update("SET AUTOCOMMIT TRUE");
 			queryRunner.update(
-					"CREATE TABLE IF NOT EXISTS MESSAGE (ID VARCHAR(64), TS TIMESTAMP, SENSORTYPE INT, VALUE BIGINT)");
+					"CREATE TABLE IF NOT EXISTS MESSAGE (FID BIGINT auto_increment PRIMARY KEY, ID VARCHAR(64), TS BIGINT, SENSORTYPE INT, VALUE BIGINT)");
 			queryRunner.update("CREATE UNIQUE HASH INDEX IF NOT EXISTS IDXID ON MESSAGE(ID)");
 			queryRunner.update("CREATE INDEX IF NOT EXISTS IDXTS ON MESSAGE(TS)");
 			queryRunner.update("CREATE INDEX IF NOT EXISTS IDXST ON MESSAGE(SENSORTYPE)");
@@ -59,7 +60,7 @@ public class StoreH2 implements Store {
 		Object[][] params = new Object[messages.size()][4];
 		for (int i = 0; i < messages.size(); i++) {
 			params[i][0] = messages.get(i).get("id");
-			params[i][1] = messages.get(i).get("timestamp");
+			params[i][1] = ((Date) messages.get(i).get("timestamp")).getTime();
 			params[i][2] = messages.get(i).get("sensorType");
 			params[i][3] = messages.get(i).get("value");
 		}
@@ -71,13 +72,13 @@ public class StoreH2 implements Store {
 	}
 
 	@Override
-	public Map<Integer, Summary> getSummary() {
+	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
 		Map<Integer, Summary> res = new HashMap<>();
 		try {
 			List<Object[]> summaries = queryRunner.query(
-					"SELECT SENSORTYPE, COUNT(*), SUM(VALUE), MIN(VALUE), MAX(VALUE) FROM MESSAGE "
-							+ "WHERE TS > DATEADD('HOUR', -1, NOW()) AND TS < NOW() GROUP BY SENSORTYPE",
-					new ArrayListHandler());
+					"SELECT SENSORTYPE, COUNT(FID), SUM(VALUE), MIN(VALUE), MAX(VALUE) FROM MESSAGE "
+							+ "WHERE TS > ? AND TS < ? GROUP BY SENSORTYPE",
+					new ArrayListHandler(), timestamp, timestamp + duration * 1000);
 			res = summaries.stream()
 					.collect(Collectors.toMap(a -> (Integer) a[0], a -> new Summary(((Number) a[0]).intValue(),
 							(Number) a[1], (Number) a[2], (Number) a[3], (Number) a[4])));

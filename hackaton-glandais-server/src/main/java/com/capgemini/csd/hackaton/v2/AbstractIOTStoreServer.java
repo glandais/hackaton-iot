@@ -27,7 +27,7 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
-	private static final long CACHE_SIZE = 2000000L;
+	private static final int CACHE_SIZE = 1100000;
 
 	private static final int BATCH_SIZE = 1000;
 
@@ -61,14 +61,28 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 
 	protected abstract Store getStore();
 
+	protected void awaitWarmupTermination() {
+		while (mem.getSize() != 0) {
+			try {
+				Thread.sleep(10L);
+			} catch (InterruptedException e) {
+				LOGGER.error(":(", e);
+			}
+		}
+	}
+
+	protected int getWarmupMessageCount() {
+		return CACHE_SIZE + 100;
+	}
+
 	@Override
 	protected boolean containsId(String id) {
 		return store.containsId(id);
 	}
 
-	protected Map<Integer, Summary> getSummary() {
-		Map<Integer, Summary> storeSummary = store.getSummary();
-		Map<Integer, Summary> memSummary = super.getSummary();
+	protected Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
+		Map<Integer, Summary> storeSummary = store.getSummary(timestamp, duration);
+		Map<Integer, Summary> memSummary = super.getSummary(timestamp, duration);
 		Map<Integer, Summary> summary = new HashMap<Integer, Summary>();
 
 		for (Entry<Integer, Summary> entry : storeSummary.entrySet()) {
@@ -86,8 +100,8 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	}
 
 	@Override
-	protected String getSynthese() {
-		String synthese = super.getSynthese();
+	protected String getSynthese(long timestamp, Integer duration) {
+		String synthese = super.getSynthese(timestamp, duration);
 		//		doIndex.set(true);
 		return synthese;
 	}

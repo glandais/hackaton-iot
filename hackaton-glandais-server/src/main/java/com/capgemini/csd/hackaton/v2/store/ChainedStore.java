@@ -24,8 +24,8 @@ public class ChainedStore implements Store {
 	}
 
 	@Override
-	public Map<Integer, Summary> getSummary() {
-		return mainStore.getSummary();
+	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
+		return mainStore.getSummary(timestamp, duration);
 	}
 
 	@Override
