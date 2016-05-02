@@ -5,6 +5,9 @@ import com.capgemini.csd.hackaton.v2.mem.MemBasic;
 import com.capgemini.csd.hackaton.v2.store.Store;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 
+import io.airlift.airline.Command;
+
+@Command(name = "server-odb", description = "Serveur ObjectDB")
 public class IOTServerODB extends AbstractIOTStoreServer {
 
 	@Override

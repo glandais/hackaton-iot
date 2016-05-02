@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.SynchronizationType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,7 @@ public class StoreObjectDB implements Store {
 
 	public void init(String dossier) {
 		entityManagerFactory = Persistence.createEntityManagerFactory(dossier + "/messages.odb");
-		em = entityManagerFactory.createEntityManager(SynchronizationType.SYNCHRONIZED);
+		em = entityManagerFactory.createEntityManager();
 		em.getMetamodel().managedType(Message.class);
 	}
 

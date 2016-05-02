@@ -9,10 +9,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.boon.core.Sys;
 import org.boon.json.JsonFactory;
+import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.IndexTreeList;
-import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,13 +26,15 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
-	private static final int CACHE_SIZE = 1100000;
+	private static final int CACHE_SIZE_REAL = 1100000;
+
+	private static int CACHE_SIZE = 1100000;
 
 	private static final int BATCH_SIZE = 1000;
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(AbstractIOTStoreServer.class);
 
-	protected IndexTreeList<String> lastInsertedStore;
+	protected Atomic.String lastInsertedStore;
 
 	protected AtomicBoolean doIndex = new AtomicBoolean(false);
 
@@ -43,8 +44,8 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	public void init() {
 		store = getStore();
 
-		DB db = DBMaker.fileDB(dossier + "/lastIndexed").make();
-		lastInsertedStore = db.indexTreeList("lastIndexed", Serializer.STRING).createOrOpen();
+		DB db = DBMaker.fileDB(dossier + "/lastIndexed").checksumHeaderBypass().make();
+		lastInsertedStore = db.atomicString("lastIndexed").createOrOpen();
 		// récupération de l'id du dernier message enregistré
 		String lastPersistedId = getLastInsertedId();
 
@@ -69,10 +70,12 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 				LOGGER.error(":(", e);
 			}
 		}
+		CACHE_SIZE = CACHE_SIZE_REAL;
 	}
 
 	protected int getWarmupMessageCount() {
-		return CACHE_SIZE + 100;
+		CACHE_SIZE = super.getWarmupMessageCount() - 100;
+		return super.getWarmupMessageCount();
 	}
 
 	@Override
@@ -175,19 +178,11 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	}
 
 	private String getLastInsertedId() {
-		if (lastInsertedStore.size() > 0) {
-			return lastInsertedStore.get(0);
-		} else {
-			return null;
-		}
+		return lastInsertedStore.get();
 	}
 
 	private void setLastInsertedId(String id) {
-		if (lastInsertedStore.size() > 0) {
-			lastInsertedStore.set(0, id);
-		} else {
-			lastInsertedStore.add(id);
-		}
+		lastInsertedStore.set(id);
 	}
 
 }

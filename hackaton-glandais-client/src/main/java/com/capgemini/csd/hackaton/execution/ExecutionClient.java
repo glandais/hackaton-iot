@@ -30,7 +30,7 @@ public class ExecutionClient implements Runnable {
 	public int port = 80;
 
 	@Option(type = OptionType.COMMAND, name = "-n", description = "Nombre de lots de messages")
-	public int n = 100;
+	public int n = 1000;
 
 	@Option(type = OptionType.COMMAND, name = "-m", description = "Nombre de messages par lot")
 	public int m = 1000;

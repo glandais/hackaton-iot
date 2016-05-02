@@ -68,10 +68,10 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 		Client client = new ClientAsyncHTTP();
 		client.setHostPort("127.0.0.1", port);
-		for (int i = 0; i < 30000; i++) {
+		for (int i = 0; i < getWarmupMessageCount() / 2; i++) {
 			client.sendMessage(true);
 		}
-		for (int i = 0; i < getWarmupMessageCount(); i++) {
+		for (int i = 0; i < getWarmupMessageCount() / 2; i++) {
 			try {
 				processRequest("/messages", AbstractClient.getMessage(true));
 			} catch (Exception e) {
@@ -94,7 +94,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected int getWarmupMessageCount() {
-		return 100000;
+		//		return 100000;
+		return 10;
 	}
 
 	private static String getTmpDossier() {
