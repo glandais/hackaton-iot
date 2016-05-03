@@ -43,7 +43,11 @@ public abstract class AbstractClient implements Client {
 	}
 
 	public static String getMessageId() {
-		return UUID.randomUUID().toString();
+		return getUUID() + getUUID();
+	}
+
+	protected static String getUUID() {
+		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
 
 	public static Integer getMessageSensorType() {

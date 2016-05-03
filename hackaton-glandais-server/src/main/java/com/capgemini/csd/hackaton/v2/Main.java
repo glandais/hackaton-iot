@@ -12,7 +12,7 @@ public class Main {
 		CliBuilder<Runnable> builder = Cli.<Runnable> builder("hackaton-glandais").withDefaultCommand(Help.class)
 				.withCommands(Help.class, IOTServerMapDB.class, IOTServerH2.class, IOTServerES.class,
 						IOTServerODB.class, IOTServerH2ES.class, IOTServerH2Mem.class, IOTServerMem.class,
-						IOTServerNoop.class, ExecutionClient.class);
+						IOTServerNoop.class, ExecutionClient.class, IOTServerODBHash.class);
 
 		Cli<Runnable> parser = builder.build();
 		parser.parse(args).run();

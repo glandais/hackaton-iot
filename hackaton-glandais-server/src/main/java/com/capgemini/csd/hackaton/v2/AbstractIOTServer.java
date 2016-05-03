@@ -35,6 +35,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(AbstractIOTServer.class);
 
+	private static final int WARMUP_COUNT = 0;
+
 	@Option(type = OptionType.GLOBAL, name = { "--port", "-p" }, description = "Port")
 	protected int port = 80;
 
@@ -94,8 +96,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected int getWarmupMessageCount() {
-		//		return 100000;
-		return 10;
+		return WARMUP_COUNT;
 	}
 
 	private static String getTmpDossier() {
@@ -165,6 +166,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				index();
 			}
 		} catch (RuntimeException e) {
+			LOGGER.error("", e);
 			throw new Exception(e);
 		}
 		return result;

@@ -21,6 +21,7 @@ import com.capgemini.csd.hackaton.v2.store.StoreH2Mem;
 import com.capgemini.csd.hackaton.v2.store.StoreH2Mem2;
 import com.capgemini.csd.hackaton.v2.store.StoreMapDB;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
+import com.capgemini.csd.hackaton.v2.store.StoreObjectDBHash;
 import com.google.common.base.Stopwatch;
 
 public class StoreBench {
@@ -40,10 +41,10 @@ public class StoreBench {
 	public static void main(String[] args) {
 		//		bench(getStoreES());
 		//		bench(getStoreH2());
+		bench(getStoreODBHash());
 		bench(getStoreODB());
-		bench(getStoreH2Mem());
+		bench(getStoreODBHash());
 		bench(getStoreODB());
-		bench(getStoreH2Mem());
 		//		bench(getStoreH2());
 		//		bench(getStoreES());
 		//		bench(getStoreH2Mem());
@@ -128,6 +129,12 @@ public class StoreBench {
 
 	private static Store getStoreODB() {
 		StoreObjectDB store = new StoreObjectDB();
+		store.init(getTmpDossier());
+		return store;
+	}
+
+	private static Store getStoreODBHash() {
+		StoreObjectDBHash store = new StoreObjectDBHash();
 		store.init(getTmpDossier());
 		return store;
 	}
