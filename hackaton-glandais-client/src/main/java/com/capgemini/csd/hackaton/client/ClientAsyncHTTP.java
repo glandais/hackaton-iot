@@ -1,6 +1,7 @@
 package com.capgemini.csd.hackaton.client;
 
 import java.io.IOException;
+import java.util.Date;
 
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -38,11 +39,12 @@ public class ClientAsyncHTTP extends AbstractClient {
 	}
 
 	@Override
-	public String getSynthese() {
+	public String getSynthese(Date start, int duration) {
 		try {
 			//			LOGGER.info("Sending getSynthese");
-			String response = httpClient.prepareGet("http://" + host + ":" + port + "/messages/synthesis").execute()
-					.get().getResponseBody();
+			String response = httpClient.prepareGet("http://" + host + ":" + port + "/messages/synthesis")
+					.addQueryParam("timestamp", getMessageTimestamp(start)).addQueryParam("duration", duration + "")
+					.execute().get().getResponseBody();
 			//			LOGGER.info("Response " + response);
 			return response;
 		} catch (Exception e) {

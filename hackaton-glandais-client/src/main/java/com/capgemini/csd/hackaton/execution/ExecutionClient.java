@@ -1,5 +1,6 @@
 package com.capgemini.csd.hackaton.execution;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -62,9 +63,9 @@ public class ExecutionClient implements Runnable {
 		LOGGER.info((n * m) + " messages envoyés");
 
 		if (synthese) {
-			Map<Integer, Map> orig = getSynthese(client);
+			Map<Integer, Map> orig = getSynthese(client, getStart(), getDuration());
 			for (int i = 0; i < 1000; i++) {
-				Map<Integer, Map> nValue = getSynthese(client);
+				Map<Integer, Map> nValue = getSynthese(client, getStart(), getDuration());
 				if (!orig.equals(nValue)) {
 					LOGGER.error("Différent!!! orig   : " + orig);
 					LOGGER.error("Différent!!! nValue : " + nValue);
@@ -81,8 +82,18 @@ public class ExecutionClient implements Runnable {
 		System.exit(0);
 	}
 
-	protected Map<Integer, Map> getSynthese(Client client) {
-		HashSet<Map> hashSet = new HashSet<>(JsonFactory.fromJson(client.getSynthese(), List.class));
+	protected int getDuration() {
+		return 3600 * 2;
+	}
+
+	protected Date getStart() {
+		Calendar start = Calendar.getInstance();
+		start.add(Calendar.HOUR_OF_DAY, -1);
+		return start.getTime();
+	}
+
+	protected Map<Integer, Map> getSynthese(Client client, Date start, int duration) {
+		HashSet<Map> hashSet = new HashSet<>(JsonFactory.fromJson(client.getSynthese(start, duration), List.class));
 		return hashSet.stream().collect(Collectors.toMap(e -> (Integer) e.get("sensorType"), e -> e, (k, v) -> {
 			throw new RuntimeException(String.format("Duplicate key %s", k));
 		}, TreeMap::new));
@@ -92,7 +103,7 @@ public class ExecutionClient implements Runnable {
 		LOGGER.info("Envoi de deux messages avec des très grandes valeurs");
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), 1, Long.MAX_VALUE - 100));
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), 1, Long.MAX_VALUE - 200));
-		printSynthese(client);
+		printSynthese(client, getStart(), getDuration());
 
 		LOGGER.info("Envoi de deux messages avec des valeurs très éloignées");
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), -1, Long.MIN_VALUE));
@@ -100,7 +111,7 @@ public class ExecutionClient implements Runnable {
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), -1, 1L));
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), -1, 1000L));
 		client.sendMessage(AbstractClient.getMessage(null, new Date(), -1, Long.MAX_VALUE));
-		printSynthese(client);
+		printSynthese(client, getStart(), getDuration());
 
 		try {
 			Thread.sleep(10000L);
@@ -108,7 +119,7 @@ public class ExecutionClient implements Runnable {
 			e1.printStackTrace();
 		}
 
-		printSynthese(client);
+		printSynthese(client, getStart(), getDuration());
 
 		LOGGER.info("Envoi du message regreergregregre");
 		String message1 = AbstractClient.getMessage("regreergregregre", null, null, null);
@@ -121,9 +132,9 @@ public class ExecutionClient implements Runnable {
 
 	}
 
-	protected void printSynthese(Client client) {
+	protected void printSynthese(Client client, Date start, int duration) {
 		LOGGER.info("Demande synthèse : ");
-		String synthese = client.getSynthese();
+		String synthese = client.getSynthese(start, duration);
 		LOGGER.info("Synthèse : " + synthese);
 	}
 

@@ -1,5 +1,6 @@
 package com.capgemini.csd.hackaton.client;
 
+import java.util.Date;
 import java.util.concurrent.SynchronousQueue;
 
 import org.slf4j.Logger;
@@ -113,7 +114,7 @@ public class ClientNetty extends AbstractClient {
 	}
 
 	@Override
-	public String getSynthese() {
+	public String getSynthese(Date start, int duration) {
 		return "?";
 	}
 

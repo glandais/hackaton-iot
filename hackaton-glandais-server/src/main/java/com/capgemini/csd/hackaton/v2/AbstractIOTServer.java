@@ -3,14 +3,17 @@ package com.capgemini.csd.hackaton.v2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.boon.json.JsonFactory;
+import org.boon.json.JsonParser;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,6 @@ import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerNetty;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
-import com.capgemini.csd.hackaton.v2.synthese.SyntheseJSON;
 
 import io.airlift.airline.Option;
 import io.airlift.airline.OptionType;
@@ -80,9 +82,11 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				LOGGER.error(":(", e);
 			}
 		}
-		client.getSynthese();
+		Calendar start = Calendar.getInstance();
+		start.add(Calendar.HOUR_OF_DAY, -1);
+		client.getSynthese(start.getTime(), 3600 * 2);
 		awaitWarmupTermination();
-		client.getSynthese();
+		client.getSynthese(start.getTime(), 3600 * 2);
 
 		client.shutdown();
 		close();
@@ -159,8 +163,22 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				result = "OK";
 			} else if (uri.startsWith("/messages/synthesis?")) {
 				Map<String, List<String>> params = Util.parse(uri.substring(uri.indexOf('?') + 1));
-				long timestamp = ISODateTimeFormat.dateTimeParser().parseMillis(params.get("timestamp").get(0));
-				Integer duration = Integer.valueOf(params.get("duration").get(0));
+				List<String> ts = params.get("timestamp");
+				long timestamp = 0;
+				if (ts == null) {
+					Calendar cal = Calendar.getInstance();
+					cal.add(Calendar.HOUR, -1);
+					timestamp = cal.getTimeInMillis();
+				} else {
+					timestamp = ISODateTimeFormat.dateTimeParser().parseMillis(ts.get(0));
+				}
+				List<String> durations = params.get("duration");
+				int duration = 0;
+				if (durations == null) {
+					duration = 3600;
+				} else {
+					duration = Integer.valueOf(durations.get(0));
+				}
 				result = getSynthese(timestamp, duration);
 			} else if (uri.equals("/index")) {
 				index();
@@ -203,14 +221,14 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	protected abstract boolean containsId(String id);
 
-	protected String getSynthese(long timestamp, Integer duration) {
+	protected String getSynthese(long timestamp, int duration) {
 		indexLock.readLock().lock();
 		try {
-			Map<Integer, Summary> summarry = getSummary(timestamp, duration);
+			Map<Integer, Summary> summarry = new TreeMap<>(getSummary(timestamp, duration));
 			List<Summary> syntheses = new ArrayList<>(summarry.values());
-			List<Map<String, Object>> syntheseMaps = syntheses.stream().map(s -> s.toMap())
-					.collect(Collectors.toList());
-			return SyntheseJSON.getObjectMapper().toJson(syntheseMaps);
+			String syntheseMaps = "[" + syntheses.stream().map(s -> s.toString()).collect(Collectors.joining(","))
+					+ "]";
+			return syntheseMaps;
 		} finally {
 			indexLock.readLock().unlock();
 		}

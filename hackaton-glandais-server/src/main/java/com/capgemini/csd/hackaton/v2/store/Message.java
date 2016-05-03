@@ -13,12 +13,12 @@ import javax.persistence.NamedQuery;
 @Entity
 @NamedQueries({ @NamedQuery(name = "Message.exists", query = "SELECT COUNT(m.id) FROM Message m WHERE m.id = :id"),
 		@NamedQuery(name = "Message.summary", query = "SELECT m.sensorType, COUNT(m.id), SUM(m.value), MIN(m.value), MAX(m.value) FROM Message m "
-				+ "WHERE m.ts BETWEEN :start AND :end GROUP BY m.sensorType") })
+				+ "WHERE m.timestamp BETWEEN :start AND :end GROUP BY m.sensorType") })
 public class Message {
 
 	@Id
 	@GeneratedValue
-	private long realId;
+	private Long realId;
 
 	@Basic
 	@Index(unique = "true")
@@ -26,7 +26,7 @@ public class Message {
 
 	@Basic
 	@Index
-	private Date ts;
+	private Date timestamp;
 
 	@Basic
 	@Index
@@ -35,10 +35,10 @@ public class Message {
 	@Basic
 	private long value;
 
-	public Message(String id, Date ts, int sensorType, long value) {
+	public Message(String id, Date timestamp, int sensorType, long value) {
 		super();
 		this.id = id;
-		this.ts = ts;
+		this.timestamp = timestamp;
 		this.sensorType = sensorType;
 		this.value = value;
 	}

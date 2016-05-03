@@ -40,7 +40,7 @@ public class StoreObjectDB implements Store {
 		em.getTransaction().begin();
 		for (Map<String, Object> map : messages) {
 			Message message = new Message((String) map.get("id"), (Date) map.get("timestamp"),
-					(Integer) map.get("sensorType"), (Long) map.get("value"));
+					((Number) map.get("sensorType")).intValue(), ((Number) map.get("value")).longValue());
 			em.persist(message);
 		}
 		em.getTransaction().commit();

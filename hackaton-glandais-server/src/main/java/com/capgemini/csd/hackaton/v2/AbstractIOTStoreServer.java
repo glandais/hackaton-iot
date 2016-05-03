@@ -103,7 +103,7 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 	}
 
 	@Override
-	protected String getSynthese(long timestamp, Integer duration) {
+	protected String getSynthese(long timestamp, int duration) {
 		String synthese = super.getSynthese(timestamp, duration);
 		//		doIndex.set(true);
 		return synthese;

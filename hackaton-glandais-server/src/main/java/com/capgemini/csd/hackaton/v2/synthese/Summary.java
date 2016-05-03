@@ -65,18 +65,20 @@ public class Summary implements LongConsumer {
 		}
 	}
 
-	public Map<String, Object> toMap() {
-		HashMap<String, Object> map = new HashMap<>();
-		map.put("sensorType", sensorType);
-		map.put("minValue", min);
-		map.put("maxValue", max);
-		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
-		map.put("mediumValue", average);
-		return map;
-	}
+	//	public Map<String, Object> toMap() {
+	//		HashMap<String, Object> map = new HashMap<>();
+	//		map.put("sensorType", sensorType);
+	//		map.put("minValue", min);
+	//		map.put("maxValue", max);
+	//		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
+	//		map.put("mediumValue", average);
+	//		return map;
+	//	}
 
 	@Override
 	public String toString() {
-		return toMap().toString();
+		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
+		return "{\"sensorType\":" + sensorType + ",\"minValue\":" + min + ",\"maxValue\":" + max + ",\"mediumValue\":"
+				+ average.toString() + "}";
 	}
 }

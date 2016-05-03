@@ -50,7 +50,7 @@ public class StoreObjectDBHash implements Store {
 		em.getTransaction().begin();
 		for (Map<String, Object> map : messages) {
 			MessageHash message = new MessageHash((String) map.get("id"), (Date) map.get("timestamp"),
-					(Integer) map.get("sensorType"), (Long) map.get("value"));
+					((Number) map.get("sensorType")).intValue(), ((Number) map.get("value")).longValue());
 			em.persist(message);
 		}
 		em.getTransaction().commit();

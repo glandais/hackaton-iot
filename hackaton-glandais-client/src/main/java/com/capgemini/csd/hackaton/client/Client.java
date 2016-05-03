@@ -1,5 +1,7 @@
 package com.capgemini.csd.hackaton.client;
 
+import java.util.Date;
+
 public interface Client {
 
 	void setHostPort(String host, int port);
@@ -10,7 +12,7 @@ public interface Client {
 
 	void sendMessage(boolean randomTime);
 
-	String getSynthese();
+	String getSynthese(Date start, int duration);
 
 	void shutdown();
 
