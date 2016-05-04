@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.boon.json.JsonFactory;
 
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.store.Message;
 import com.google.common.base.Stopwatch;
@@ -28,7 +29,7 @@ public class ParseBench {
 	}
 
 	protected static void parseBoonMap(String message) {
-		JsonFactory.fromJson(message, Map.class);
+		Util.fromJson(message);
 	}
 
 }

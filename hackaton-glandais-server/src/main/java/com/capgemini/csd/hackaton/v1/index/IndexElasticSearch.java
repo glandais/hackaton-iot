@@ -23,6 +23,8 @@ import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.capgemini.csd.hackaton.Util;
+
 public class IndexElasticSearch implements Index {
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(IndexElasticSearch.class);
@@ -50,7 +52,7 @@ public class IndexElasticSearch implements Index {
 
 	@Override
 	public void index(String json) throws Exception {
-		Map<?, ?> map = JsonFactory.fromJson(json, Map.class);
+		Map<?, ?> map = Util.fromJson(json);
 		if (exists(map)) {
 			throw new Exception("Element existant");
 		} else {

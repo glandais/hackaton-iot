@@ -9,10 +9,10 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.boon.json.JsonFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.store.Store;
 import com.capgemini.csd.hackaton.v2.store.StoreElasticSearch;
@@ -65,7 +65,7 @@ public class StoreBench {
 			List<Map<String, Object>> messages = new ArrayList<>(1001);
 			for (int j = 0; j < N_MESSAGES; j++) {
 				String message = AbstractClient.getMessage(true);
-				Map<String, Object> map = JsonFactory.fromJson(message, Map.class);
+				Map<String, Object> map = Util.fromJson(message);
 				ids.add(map.get("id").toString());
 				messages.add(map);
 			}

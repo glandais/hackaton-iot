@@ -12,8 +12,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.boon.json.JsonFactory;
-import org.boon.json.JsonParser;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,6 +155,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	@Override
 	public String processRequest(String uri, String message) throws Exception {
 		String result = "";
+		//		System.out.println(uri);
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
@@ -200,7 +199,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected void process(String json) {
-		Map<String, Object> message = JsonFactory.fromJson(json, Map.class);
+		Map<String, Object> message = Util.fromJson(json);
 		String id = (String) message.get("id");
 
 		idLock.lock();

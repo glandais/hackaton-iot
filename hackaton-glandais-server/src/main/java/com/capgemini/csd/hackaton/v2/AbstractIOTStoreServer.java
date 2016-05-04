@@ -8,13 +8,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.boon.core.Sys;
-import org.boon.json.JsonFactory;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.store.Store;
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
@@ -138,11 +138,11 @@ public abstract class AbstractIOTStoreServer extends AbstractIOTServer {
 		String message = tailerToPersist.readText();
 		String precedent = null;
 		if (initial && message != null) {
-			Map<String, Object> map = JsonFactory.fromJson(message, Map.class);
+			Map<String, Object> map = Util.fromJson(message);
 			setLastInsertedId((String) map.get("id"));
 		}
 		while (message != null) {
-			Map<String, Object> map = JsonFactory.fromJson(message, Map.class);
+			Map<String, Object> map = Util.fromJson(message);
 			if (lastIndexed != null && lastIndexed.equals(map.get("id"))) {
 				break;
 			}

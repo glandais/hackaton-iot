@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.boon.core.Sys;
 import org.boon.json.JsonFactory;
 
+import com.capgemini.csd.hackaton.Util;
 import com.google.common.collect.ImmutableMap;
 
 import net.openhft.koloboke.collect.set.hash.HashObjSets;
@@ -78,7 +79,7 @@ public class IndexMemory implements Index {
 
 	@Override
 	public void index(String json) {
-		Map<?, ?> message = JsonFactory.fromJson(json, Map.class);
+		Map<?, ?> message = Util.fromJson(json);
 		String id = (String) message.get("id");
 		idLock.lock();
 		try {

@@ -20,6 +20,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.boon.json.JsonFactory;
+import org.joda.time.DateTime;
+
 import com.capgemini.csd.hackaton.v2.synthese.Summary;
 
 public class Util {
@@ -89,4 +92,13 @@ public class Util {
 			throw new RuntimeException("Impossible: UTF-8 is a required encoding", e);
 		}
 	}
+
+	public static Map fromJson(String message) {
+		Map map = JsonFactory.fromJson(message, Map.class);
+		if (map.get("timestamp") instanceof String) {
+			map.put("timestamp", DateTime.parse((String) map.get("timestamp")).toDate());
+		}
+		return map;
+	}
+
 }

@@ -2,8 +2,7 @@ package com.capgemini.csd.hackaton.v2;
 
 import java.util.Map;
 
-import org.boon.json.JsonFactory;
-
+import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.mem.MemBasic;
 
@@ -24,7 +23,7 @@ public class IOTServerMem extends AbstractIOTServer {
 		ExcerptTailer tailer = queueToPersist.createTailer();
 		String json = tailer.readText();
 		while (json != null) {
-			Map message = JsonFactory.fromJson(json, Map.class);
+			Map message = Util.fromJson(json);
 			String id = (String) message.get("id");
 			memStore.putId(id);
 			memStore.index(message);

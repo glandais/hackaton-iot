@@ -17,6 +17,7 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 
+import com.capgemini.csd.hackaton.Util;
 import com.google.common.collect.ImmutableMap;
 
 public abstract class AbstractIndexMapDB implements Index {
@@ -46,7 +47,7 @@ public abstract class AbstractIndexMapDB implements Index {
 
 	@Override
 	public void index(String json) {
-		Map<?, ?> message = JsonFactory.fromJson(json, Map.class);
+		Map<?, ?> message = Util.fromJson(json);
 		String id = (String) message.get("id");
 		synchronized (ids) {
 			if (ids.contains(id)) {
