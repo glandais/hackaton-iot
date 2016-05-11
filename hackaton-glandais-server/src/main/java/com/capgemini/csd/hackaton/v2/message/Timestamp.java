@@ -1,15 +1,15 @@
 package com.capgemini.csd.hackaton.v2.message;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Timestamp implements Comparable<Timestamp> {
 
 	// id incrémental, si deux messages avec le même timestamp
-	private static final AtomicLong currentId = new AtomicLong();
+	private static final AtomicInteger currentId = new AtomicInteger();
 
 	private long timestamp;
 
-	private long id;
+	private int id;
 
 	public Timestamp(long timestamp) {
 		super();
@@ -17,7 +17,7 @@ public class Timestamp implements Comparable<Timestamp> {
 		this.id = currentId.getAndIncrement();
 	}
 
-	public Timestamp(long timestamp, long id) {
+	public Timestamp(long timestamp, int id) {
 		super();
 		this.timestamp = timestamp;
 		this.id = id;
@@ -27,7 +27,7 @@ public class Timestamp implements Comparable<Timestamp> {
 		return timestamp;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 

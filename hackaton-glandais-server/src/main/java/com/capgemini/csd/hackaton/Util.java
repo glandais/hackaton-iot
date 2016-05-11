@@ -40,7 +40,7 @@ public class Util {
 		long lo = timestamp;
 		long hi = timestamp + duration * 1000;
 		Timestamp from = new Timestamp(lo, 0);
-		Timestamp to = new Timestamp(hi, Long.MAX_VALUE);
+		Timestamp to = new Timestamp(hi, Integer.MAX_VALUE);
 
 		Stream<Value> stream = memoryMap.subMap(from, to).values().stream();
 

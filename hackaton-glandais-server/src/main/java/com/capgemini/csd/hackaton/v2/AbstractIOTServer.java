@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -16,6 +17,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.boon.core.Sys;
 import org.joda.time.format.ISODateTimeFormat;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.IndexTreeList;
+import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +36,6 @@ import com.capgemini.csd.hackaton.v2.store.Store;
 
 import io.airlift.airline.Option;
 import io.airlift.airline.OptionType;
-import net.openhft.chronicle.queue.ChronicleQueue;
-import net.openhft.chronicle.queue.ChronicleQueueBuilder;
-import net.openhft.chronicle.queue.ExcerptAppender;
-import net.openhft.chronicle.queue.ExcerptTailer;
-import net.openhft.chronicle.queue.TailerDirection;
 
 public abstract class AbstractIOTServer implements Runnable, Controler {
 
@@ -62,8 +62,10 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	protected Store store;
 
-	// queue des éléments à persisté
-	protected ChronicleQueue queueToPersist;
+	// queue des éléments à persister
+	protected IndexTreeList<Message> queueToPersist;
+
+	protected AtomicInteger lastIndex = new AtomicInteger(0);
 
 	// blocage existance id
 	protected ReentrantLock idLock = new ReentrantLock();
@@ -101,28 +103,18 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public void configure() {
 		dossier = new File(dossier).getAbsolutePath();
+		new File(dossier).mkdirs();
 		LOGGER.info("Dossier : " + dossier);
 
 		// liste de tous les messages
-		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
+		DB db = DBMaker.fileDB(dossier + "/queueToPersist").fileMmapEnableIfSupported().make();
+		queueToPersist = (IndexTreeList<Message>) db.indexTreeList("messages", Serializer.ELSA).createOrOpen();
 
 		mem = getMem();
 		store = getStore();
 
-		// récupération de l'id du dernier message enregistré
-		String lastPersistedId = getLastInsertedId();
-
 		// enregistrement des messages non enregistrés
-		ExcerptTailer tailerToPersist = queueToPersist.createTailer().direction(TailerDirection.BACKWARD).toEnd();
-		index(tailerToPersist, lastPersistedId, true);
-
-		queueToPersist.close();
-		try {
-			FileUtils.deleteDirectory(new File(dossier, "queueToPersist"));
-		} catch (Exception e) {
-			LOGGER.error("", e);
-		}
-		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
+		index();
 
 		startPersister();
 	}
@@ -164,18 +156,12 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 					duration = Integer.valueOf(durations.get(0));
 				}
 				result = getSynthese(timestamp, duration);
-			} else if (uri.equals("/index")) {
-				index();
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("", e);
 			throw new Exception(e);
 		}
 		return result;
-	}
-
-	protected void index() {
-		// noop
 	}
 
 	protected void close() {
@@ -185,8 +171,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected void process(String json) {
-		Map<String, Object> message = Util.fromJson(json);
-		String id = (String) message.get("id");
+		Map<String, Object> map = Util.fromJson(json);
+		String id = (String) map.get("id");
 
 		if (TEST_ID) {
 			idLock.lock();
@@ -200,38 +186,13 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			}
 		}
 
-		Timestamp ts = mem.index(message);
+		Timestamp ts = mem.index(map);
+
 		// mise en queue pour la persistence
-		writeMessage(message, id, ts);
-	}
-
-	protected void writeMessage(Map<String, Object> message, String id, Timestamp ts) {
-		Long timestamp = (Long) message.get("timestamp");
-		Integer sensorType = ((Number) message.get("sensorType")).intValue();
-		Long value = ((Number) message.get("value")).longValue();
-
-		ExcerptAppender appender = queueToPersist.createAppender();
-		appender.writeDocument(w -> {
-			w.write(() -> "timestamp").int64(timestamp);
-			w.write(() -> "sensorType").int32(sensorType);
-			w.write(() -> "value").int64(value);
-			w.write(() -> "tsId").int32(ts.getId());
-			w.write(() -> "id").text(id);
-		});
-	}
-
-	protected Message readMessage(ExcerptTailer tailerToPersist) {
-		Message[] messages = new Message[1];
-		tailerToPersist.readDocument(r -> {
-			long timestamp = r.read(() -> "timestamp").int64();
-			int sensorType = r.read(() -> "sensorType").int32();
-			long value = r.read(() -> "value").int64();
-			int tsId = r.read(() -> "tsId").int32();
-			String id = r.read(() -> "id").text();
-
-			messages[0] = new Message(id, timestamp, sensorType, value, tsId);
-		});
-		return messages[0];
+		Integer sensorType = ((Number) map.get("sensorType")).intValue();
+		Long value = ((Number) map.get("value")).longValue();
+		Message mes = new Message(id, ts.getTimestamp(), sensorType, value, ts.getId());
+		queueToPersist.add(mes);
 	}
 
 	protected boolean containsId(String id) {
@@ -272,11 +233,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	private void startPersister() {
 		Thread thread = new Thread(() -> {
-			ExcerptTailer tailerToPersist = queueToPersist.createTailer();
-			tailerToPersist.toEnd();
 			while (true) {
 				if (mem.getSize() > CACHE_SIZE) {
-					index(tailerToPersist, null, false);
+					indexMessages(lastIndex.get(), queueToPersist.getSize() - 1, false);
 					Sys.sleep(1L);
 				} else {
 					Sys.sleep(SLEEP_PERSISTER);
@@ -288,42 +247,44 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		thread.start();
 	}
 
-	private void index(ExcerptTailer tailerToPersist, String lastIndexed, boolean initial) {
-		List<Message> messages = new ArrayList<>(BATCH_SIZE + 1);
+	private void index() {
+		// récupération de l'id du dernier message enregistré
+		String lastPersistedId = getLastInsertedId();
 
-		Message message = readMessage(tailerToPersist);
-		Message precedent = null;
-		if (initial && message != null) {
-			setLastInsertedId(message.getId());
-		}
-		while (message != null) {
-			if (lastIndexed != null && lastIndexed.equals(message.getId())) {
+		int start = 0;
+		for (int i = queueToPersist.getSize() - 1; i >= 0; i--) {
+			if (queueToPersist.get(i).getId().equals(lastPersistedId)) {
+				start = i;
 				break;
 			}
-			messages.add(message);
-			if (messages.size() == BATCH_SIZE) {
-				indexMessages(messages, initial);
-				messages = new ArrayList<>(BATCH_SIZE + 1);
-			}
-			message = readMessage(tailerToPersist);
-			if (message != null && precedent != null && message.getId().equals(precedent.getId())) {
-				break;
-			}
-			precedent = message;
 		}
-		if (messages.size() > 0) {
-			indexMessages(messages, initial);
-		}
+		indexMessages(start, queueToPersist.getSize() - 1, true);
 	}
 
-	private void indexMessages(List<Message> messages, boolean initial) {
-		LOGGER.info("Indexing " + messages.size() + " messages");
+	private void indexMessages(int from, int to, boolean initial) {
+		if (to < from) {
+			return;
+		}
+		LOGGER.info("Indexing " + (to - from) + " messages");
 		indexLock.writeLock().lock();
 		try {
-			store.indexMessages(messages);
-			mem.removeMessages(messages);
+			int rfrom = from;
+			int rto = from + BATCH_SIZE;
+			do {
+				if (rto > to) {
+					rto = to;
+				}
+				if (rfrom > to) {
+					rfrom = to;
+				}
+				List<Message> subList = queueToPersist.subList(rfrom, rto);
+				store.indexMessages(subList);
+				mem.removeMessages(subList);
+				rfrom = rfrom + BATCH_SIZE;
+				rto = rto + BATCH_SIZE;
+			} while (rto < to);
 			if (!initial) {
-				String id = (String) messages.get(messages.size() - 1).getId();
+				String id = (String) queueToPersist.get(queueToPersist.size() - 1).getId();
 				setLastInsertedId(id);
 			}
 		} finally {
