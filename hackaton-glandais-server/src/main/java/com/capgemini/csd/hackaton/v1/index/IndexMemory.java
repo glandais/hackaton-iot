@@ -1,7 +1,6 @@
 package com.capgemini.csd.hackaton.v1.index;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
@@ -90,15 +89,11 @@ public class IndexMemory implements Index {
 		} finally {
 			idLock.unlock();
 		}
-		long time = System.currentTimeMillis();
-		long lo = time - 3600 * 1000;
-		long timestamp = (long) message.get("timestamp");
-		if (timestamp > lo) {
-			long sensorId = ((Number) message.get("sensorType")).longValue();
-			long value = ((Number) message.get("value")).longValue();
-			synchronized (map) {
-				map.put(new UUID(timestamp, currentId.incrementAndGet()), new UUID(sensorId, value));
-			}
+		long timestamp = ((Number) message.get("timestamp")).longValue();
+		long sensorId = ((Number) message.get("sensorType")).longValue();
+		long value = ((Number) message.get("value")).longValue();
+		synchronized (map) {
+			map.put(new UUID(timestamp, currentId.incrementAndGet()), new UUID(sensorId, value));
 		}
 	}
 

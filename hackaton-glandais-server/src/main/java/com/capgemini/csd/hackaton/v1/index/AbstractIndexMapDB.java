@@ -1,6 +1,5 @@
 package com.capgemini.csd.hackaton.v1.index;
 
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.LongSummaryStatistics;
@@ -55,15 +54,11 @@ public abstract class AbstractIndexMapDB implements Index {
 			}
 			ids.add(id);
 		}
-		long time = System.currentTimeMillis();
-		long lo = time - 3600 * 1000;
-		long timestamp = (long) message.get("timestamp");
-		if (timestamp > lo) {
-			long sensorId = ((Number) message.get("sensorType")).longValue();
-			long value = ((Number) message.get("value")).longValue();
-			synchronized (map) {
-				map.put(new UUID(timestamp, currentId.incrementAndGet()), new UUID(sensorId, value));
-			}
+		long timestamp = ((Number) message.get("timestamp")).longValue();
+		long sensorId = ((Number) message.get("sensorType")).longValue();
+		long value = ((Number) message.get("value")).longValue();
+		synchronized (map) {
+			map.put(new UUID(timestamp, currentId.incrementAndGet()), new UUID(sensorId, value));
 		}
 	}
 
