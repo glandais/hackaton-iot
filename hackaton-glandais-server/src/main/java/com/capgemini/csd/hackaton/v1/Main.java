@@ -1,6 +1,6 @@
 package com.capgemini.csd.hackaton.v1;
 
-import com.capgemini.csd.hackaton.execution.ExecutionClient;
+import com.capgemini.csd.hackaton.client.ExecutionClient;
 import com.capgemini.csd.hackaton.v1.bench.BenchIndex;
 import com.capgemini.csd.hackaton.v1.bench.BenchQueue;
 import com.capgemini.csd.hackaton.v1.execution.ExecutionServer;

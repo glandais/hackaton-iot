@@ -92,7 +92,7 @@ public class IndexMemory implements Index {
 		}
 		long time = System.currentTimeMillis();
 		long lo = time - 3600 * 1000;
-		long timestamp = ((Date) message.get("timestamp")).getTime();
+		long timestamp = (long) message.get("timestamp");
 		if (timestamp > lo) {
 			long sensorId = ((Number) message.get("sensorType")).longValue();
 			long value = ((Number) message.get("value")).longValue();

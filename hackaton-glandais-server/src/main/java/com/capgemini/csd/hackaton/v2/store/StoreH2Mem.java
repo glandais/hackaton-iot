@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class StoreH2Mem implements Store {
 
@@ -100,16 +100,16 @@ public class StoreH2Mem implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		Object[][] params = new Object[messages.size()][4];
 		Object[][] paramsIds = new Object[messages.size()][1];
 		for (int i = 0; i < messages.size(); i++) {
-			Object id = messages.get(i).get("id");
+			Object id = messages.get(i).getId();
 			params[i][0] = id;
 			paramsIds[i][0] = id;
-			params[i][1] = messages.get(i).get("timestamp");
-			params[i][2] = messages.get(i).get("sensorType");
-			params[i][3] = messages.get(i).get("value");
+			params[i][1] = messages.get(i).getTimestamp();
+			params[i][2] = messages.get(i).getSensorType();
+			params[i][3] = messages.get(i).getValue();
 		}
 		try {
 			queryRunnerDisk.batch("INSERT INTO MESSAGE (ID, TS, SENSORTYPE, VALUE) VALUES (?, ?, ?, ?)", params);

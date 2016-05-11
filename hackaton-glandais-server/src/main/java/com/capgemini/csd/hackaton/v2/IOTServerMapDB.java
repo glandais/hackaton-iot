@@ -8,11 +8,11 @@ import com.capgemini.csd.hackaton.v2.store.StoreMapDB;
 import io.airlift.airline.Command;
 
 @Command(name = "server-mapdb", description = "Serveur MapDB")
-public class IOTServerMapDB extends AbstractIOTStoreServer {
+public class IOTServerMapDB extends AbstractIOTServer {
 
 	@Override
 	protected Mem getMem() {
-		return new MemBasic(false);
+		return new MemBasic();
 	}
 
 	@Override

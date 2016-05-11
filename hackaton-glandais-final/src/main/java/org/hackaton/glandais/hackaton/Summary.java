@@ -1,9 +1,8 @@
-package com.capgemini.csd.hackaton.v2.synthese;
+package org.hackaton.glandais.hackaton;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.LongConsumer;
 
 public class Summary implements LongConsumer {
@@ -26,6 +25,8 @@ public class Summary implements LongConsumer {
 		this.count = count.longValue();
 		if (total instanceof BigDecimal) {
 			this.total = (BigDecimal) total;
+		} else if (total instanceof BigInteger) {
+			this.total = new BigDecimal((BigInteger) total);
 		} else {
 			this.total = BigDecimal.valueOf(total.doubleValue());
 		}
@@ -64,16 +65,6 @@ public class Summary implements LongConsumer {
 			return Math.min(min1, min2);
 		}
 	}
-
-	//	public Map<String, Object> toMap() {
-	//		HashMap<String, Object> map = new HashMap<>();
-	//		map.put("sensorType", sensorType);
-	//		map.put("minValue", min);
-	//		map.put("maxValue", max);
-	//		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
-	//		map.put("mediumValue", average);
-	//		return map;
-	//	}
 
 	@Override
 	public String toString() {

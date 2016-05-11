@@ -8,11 +8,11 @@ import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 import io.airlift.airline.Command;
 
 @Command(name = "server-odb", description = "Serveur ObjectDB")
-public class IOTServerODB extends AbstractIOTStoreServer {
+public class IOTServerODB extends AbstractIOTServer {
 
 	@Override
 	protected Mem getMem() {
-		return new MemBasic(false);
+		return new MemBasic();
 	}
 
 	@Override

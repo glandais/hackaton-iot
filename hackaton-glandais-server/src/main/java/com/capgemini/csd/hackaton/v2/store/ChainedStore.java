@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class ChainedStore implements Store {
 
@@ -34,7 +35,7 @@ public class ChainedStore implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		mainStore.indexMessages(messages);
 		for (Store store : stores) {
 			executor.submit(() -> store.indexMessages(messages));

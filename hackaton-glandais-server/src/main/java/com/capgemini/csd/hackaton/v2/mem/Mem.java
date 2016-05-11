@@ -4,19 +4,21 @@ import java.util.List;
 import java.util.Map;
 
 import com.capgemini.csd.hackaton.v2.SummaryComputer;
+import com.capgemini.csd.hackaton.v2.message.Message;
+import com.capgemini.csd.hackaton.v2.message.Timestamp;
 
 public interface Mem extends SummaryComputer {
 
 	boolean containsId(String id);
 
-	void removeMessages(List<Map<String, Object>> messages);
+	Timestamp index(Map<String, Object> message);
+
+	void removeMessages(List<Message> messages);
 
 	void putId(String id);
 
-	void index(Map<String, Object> message);
-
 	long getSize();
 
-	long getMemorySize();
+	void close();
 
 }

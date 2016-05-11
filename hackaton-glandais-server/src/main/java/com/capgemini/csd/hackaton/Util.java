@@ -2,8 +2,6 @@ package com.capgemini.csd.hackaton;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -14,59 +12,66 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.boon.json.JsonFactory;
 import org.joda.time.DateTime;
 
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Timestamp;
+import com.capgemini.csd.hackaton.v2.message.Value;
 
 public class Util {
 
-	// id incrémental, si deux messages avec le même timestamp
-	private static final AtomicLong currentId = new AtomicLong();
+	public static void main(String[] args) {
+		TreeMap<Timestamp, Value> map = new TreeMap<>();
+		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 200));
+		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 100));
+		Map<Integer, Summary> summary = getSummary(map, 0, 1000);
+		System.out.println(summary);
+	}
 
-	public static final Map<Integer, Summary> getSummary(NavigableMap<UUID, UUID> memoryMap, long timestamp,
+	public static final Map<Integer, Summary> getSummary(NavigableMap<Timestamp, Value> memoryMap, long timestamp,
 			Integer duration) {
 		long lo = timestamp;
 		long hi = timestamp + duration * 1000;
-		UUID from = new UUID(lo, 0);
-		UUID to = new UUID(hi, Long.MAX_VALUE);
+		Timestamp from = new Timestamp(lo, 0);
+		Timestamp to = new Timestamp(hi, Long.MAX_VALUE);
 
-		Stream<UUID> stream = memoryMap.subMap(from, to).values().stream();
+		Stream<Value> stream = memoryMap.subMap(from, to).values().stream();
 
-		Map<Long, List<Long>> messagesPerSensor = stream
-				.collect(groupingBy(UUID::getMostSignificantBits, mapping(UUID::getLeastSignificantBits, toList())));
-		Stream<Entry<Long, List<Long>>> grouped = messagesPerSensor.entrySet().stream();
-
-		return grouped.collect(toMap(e -> e.getKey().intValue(), e -> e.getValue().stream()
-				.collect(() -> new Summary(e.getKey().intValue()), Summary::accept, Summary::combine)));
+		Map<Integer, Summary> map = stream.collect(groupingBy(Value::getSensorId,
+				mapping(Value::getValue, Collector.of(Summary::new, Summary::accept, Summary::combine2))));
+		for (Entry<Integer, Summary> entry : map.entrySet()) {
+			entry.getValue().setSensorType(entry.getKey());
+		}
+		return map;
 	}
 
-	public static final UUID add(Map<UUID, UUID> map, Map<String, Object> message, Lock w) {
-		long timestamp = ((Date) message.get("timestamp")).getTime();
-		long sensorId = ((Number) message.get("sensorType")).longValue();
+	public static final Timestamp add(Map<Timestamp, Value> map, Map<String, Object> message, Lock w) {
+		long timestamp = (long) message.get("timestamp");
+		int sensorId = ((Number) message.get("sensorType")).intValue();
 		long value = ((Number) message.get("value")).longValue();
 
-		UUID timeUUID = new UUID(timestamp, currentId.getAndIncrement());
-		UUID valueUUID = new UUID(sensorId, value);
+		Timestamp ts = new Timestamp(timestamp);
+		Value val = new Value(sensorId, value);
 
 		if (w != null) {
 			w.lock();
 		}
 		try {
-			map.put(timeUUID, valueUUID);
+			map.put(ts, val);
 		} finally {
 			if (w != null) {
 				w.unlock();
 			}
 		}
 
-		return timeUUID;
+		return ts;
 	}
 
 	public static Map<String, List<String>> parse(final String query) {
@@ -96,7 +101,10 @@ public class Util {
 	public static Map fromJson(String message) {
 		Map map = JsonFactory.fromJson(message, Map.class);
 		if (map.get("timestamp") instanceof String) {
-			map.put("timestamp", DateTime.parse((String) map.get("timestamp")).toDate());
+			map.put("timestamp", DateTime.parse((String) map.get("timestamp")).getMillis());
+		}
+		if (map.get("timestamp") instanceof Date) {
+			map.put("timestamp", ((Date) map.get("timestamp")).getTime());
 		}
 		return map;
 	}

@@ -13,7 +13,8 @@ import javax.persistence.Persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class StoreObjectDB implements Store {
 
@@ -36,11 +37,9 @@ public class StoreObjectDB implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		em.getTransaction().begin();
-		for (Map<String, Object> map : messages) {
-			Message message = new Message((String) map.get("id"), (Date) map.get("timestamp"),
-					((Number) map.get("sensorType")).intValue(), ((Number) map.get("value")).longValue());
+		for (Message message : messages) {
 			em.persist(message);
 		}
 		em.getTransaction().commit();

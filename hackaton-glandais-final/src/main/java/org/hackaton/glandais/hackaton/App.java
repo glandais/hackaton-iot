@@ -1,53 +1,58 @@
-package com.capgemini.csd.hackaton.v2;
+package org.hackaton.glandais.hackaton;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.boon.core.Sys;
+import org.boon.json.JsonFactory;
+import org.boon.json.ObjectMapper;
+import org.hackaton.glandais.hackaton.server.Server;
+import org.hackaton.glandais.hackaton.server.ServerNetty;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.Controler;
-import com.capgemini.csd.hackaton.Util;
-import com.capgemini.csd.hackaton.client.Summary;
-import com.capgemini.csd.hackaton.server.Server;
-import com.capgemini.csd.hackaton.server.ServerNetty;
-import com.capgemini.csd.hackaton.v2.mem.Mem;
-import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
-import com.capgemini.csd.hackaton.v2.store.Store;
-
+import io.airlift.airline.Cli;
+import io.airlift.airline.Cli.CliBuilder;
+import io.airlift.airline.Command;
+import io.airlift.airline.Help;
 import io.airlift.airline.Option;
 import io.airlift.airline.OptionType;
-import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ChronicleQueueBuilder;
 import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.TailerDirection;
+import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
 
-public abstract class AbstractIOTServer implements Runnable, Controler {
+@Command(name = "server", description = "Server")
+public class App implements Controler, Runnable {
 
-	public final static Logger LOGGER = LoggerFactory.getLogger(AbstractIOTServer.class);
+	public final static Logger LOGGER = LoggerFactory.getLogger(App.class);
 
-	public static final boolean TEST_ID = false;
-
-	public static int CACHE_SIZE = 1100000;
+	private static final int WARMUP_COUNT = 30000;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
+	private static final int CACHE_SIZE_REAL = 1100000;
+
+	private static int CACHE_SIZE = CACHE_SIZE_REAL;
+
 	private static final int BATCH_SIZE = 1000;
+
+	protected Store store;
 
 	@Option(type = OptionType.GLOBAL, name = { "--port", "-p" }, description = "Port")
 	protected int port = 80;
@@ -58,12 +63,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	// composant serveur
 	protected Server server;
 
-	protected Mem mem;
-
-	protected Store store;
-
 	// queue des éléments à persisté
-	protected ChronicleQueue queueToPersist;
+	protected SingleChronicleQueue queueToPersist;
 
 	// blocage existance id
 	protected ReentrantLock idLock = new ReentrantLock();
@@ -71,32 +72,87 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	// blocage indexation/calcul de la synthèse
 	protected ReentrantReadWriteLock indexLock = new ReentrantReadWriteLock();
 
-	protected abstract Mem getMem();
+	protected ObjectMapper objectMapper = JsonFactory.createUseJSONDates();
 
-	protected abstract Store getStore();
+	public static void main(String[] args) {
+		CliBuilder<Runnable> builder = Cli.<Runnable> builder("hackaton-server").withDefaultCommand(Help.class)
+				.withCommands(Help.class, App.class);
 
-	public int getPort() {
-		return port;
-	}
-
-	public String getDossier() {
-		return dossier;
-	}
-
-	public void setDossier(String dossier) {
-		this.dossier = dossier;
+		Cli<Runnable> parser = builder.build();
+		parser.parse(args).run();
 	}
 
 	@Override
 	public void run() {
-		Warmer.warmup(this);
-		startServer(true);
+		warmup();
+
+		configure();
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
 				close();
 			}
 		});
+
+		startServer(true);
+	}
+
+	public void setDossier(String dossier) {
+		this.dossier = dossier;
+	}
+
+	public Mem mem;
+
+	private void warmup() {
+		LOGGER.info("Warming");
+		String dossierTmp = dossier;
+		dossier = getTmpDossier();
+		configure();
+		startServer(false);
+
+		Client client = new Client();
+		client.setHostPort("127.0.0.1", port);
+		for (int i = 0; i < getWarmupMessageCount() / 2; i++) {
+			client.sendMessage(true);
+		}
+		for (int i = 0; i < getWarmupMessageCount() / 2; i++) {
+			try {
+				processRequest("/messages", Util.getMessage(true));
+			} catch (Exception e) {
+				LOGGER.error(":(", e);
+			}
+		}
+		Calendar start = Calendar.getInstance();
+		start.add(Calendar.HOUR_OF_DAY, -1);
+		client.getSynthese(start.getTime(), 3600 * 2);
+		awaitWarmupTermination();
+		client.getSynthese(start.getTime(), 3600 * 2);
+
+		client.shutdown();
+		close();
+		FileUtils.deleteQuietly(new File(dossier));
+		dossier = dossierTmp;
+		LOGGER.info("Warmed");
+	}
+
+	private static String getTmpDossier() {
+		try {
+			File tmpFile = File.createTempFile("bench", "store");
+			tmpFile.delete();
+			return tmpFile.getAbsolutePath();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected void startServer(boolean await) {
+		this.server = new ServerNetty();
+		server.start(this, port);
+		LOGGER.info("Serveur démarré");
+		if (await) {
+			server.awaitTermination();
+		}
 	}
 
 	public void configure() {
@@ -106,8 +162,14 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		// liste de tous les messages
 		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
 
-		mem = getMem();
-		store = getStore();
+		mem = new Mem();
+
+		init();
+	}
+
+	public void init() {
+		store = new Store();
+		store.init(dossier);
 
 		// récupération de l'id du dernier message enregistré
 		String lastPersistedId = getLastInsertedId();
@@ -116,31 +178,14 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		ExcerptTailer tailerToPersist = queueToPersist.createTailer().direction(TailerDirection.BACKWARD).toEnd();
 		index(tailerToPersist, lastPersistedId, true);
 
-		queueToPersist.close();
-		try {
-			FileUtils.deleteDirectory(new File(dossier, "queueToPersist"));
-		} catch (Exception e) {
-			LOGGER.error("", e);
-		}
-		queueToPersist = ChronicleQueueBuilder.single(dossier + "/queueToPersist").build();
+		// FIXME RAZ queueToPersist quand tout a été persisté
 
 		startPersister();
-	}
-
-	public void startServer(boolean await) {
-		configure();
-		this.server = new ServerNetty();
-		server.start(this, port);
-		LOGGER.info("Serveur démarré");
-		if (await) {
-			server.awaitTermination();
-		}
 	}
 
 	@Override
 	public String processRequest(String uri, String message) throws Exception {
 		String result = "";
-		//		System.out.println(uri);
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
@@ -164,8 +209,6 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 					duration = Integer.valueOf(durations.get(0));
 				}
 				result = getSynthese(timestamp, duration);
-			} else if (uri.equals("/index")) {
-				index();
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("", e);
@@ -174,13 +217,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		return result;
 	}
 
-	protected void index() {
-		// noop
-	}
-
 	protected void close() {
 		LOGGER.info("Fermeture");
-		mem.close();
 		server.close();
 	}
 
@@ -188,25 +226,23 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		Map<String, Object> message = Util.fromJson(json);
 		String id = (String) message.get("id");
 
-		if (TEST_ID) {
-			idLock.lock();
-			try {
-				if (mem.containsId(id) || containsId(id)) {
-					throw new RuntimeException("ID existant : " + id);
-				}
-				mem.putId(id);
-			} finally {
-				idLock.unlock();
+		idLock.lock();
+		try {
+			if (mem.containsId(id) || containsId(id)) {
+				throw new RuntimeException("ID existant : " + id);
 			}
+			mem.putId(id);
+		} finally {
+			idLock.unlock();
 		}
 
-		Timestamp ts = mem.index(message);
+		UUID uuid = mem.index(message);
 		// mise en queue pour la persistence
-		writeMessage(message, id, ts);
+		writeMessage(message, id, uuid);
 	}
 
-	protected void writeMessage(Map<String, Object> message, String id, Timestamp ts) {
-		Long timestamp = (Long) message.get("timestamp");
+	protected void writeMessage(Map<String, Object> message, String id, UUID uuid) {
+		Long timestamp = ((Date) message.get("timestamp")).getTime();
 		Integer sensorType = ((Number) message.get("sensorType")).intValue();
 		Long value = ((Number) message.get("value")).longValue();
 
@@ -215,27 +251,26 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			w.write(() -> "timestamp").int64(timestamp);
 			w.write(() -> "sensorType").int32(sensorType);
 			w.write(() -> "value").int64(value);
-			w.write(() -> "tsId").int32(ts.getId());
+			w.write(() -> "uuidMost").int64(uuid.getMostSignificantBits());
+			w.write(() -> "uuidLeast").int64(uuid.getLeastSignificantBits());
 			w.write(() -> "id").text(id);
 		});
 	}
 
-	protected Message readMessage(ExcerptTailer tailerToPersist) {
+	private Message readMessage(ExcerptTailer tailerToPersist) {
 		Message[] messages = new Message[1];
 		tailerToPersist.readDocument(r -> {
 			long timestamp = r.read(() -> "timestamp").int64();
 			int sensorType = r.read(() -> "sensorType").int32();
 			long value = r.read(() -> "value").int64();
-			int tsId = r.read(() -> "tsId").int32();
+			long uuidMost = r.read(() -> "uuidMost").int64();
+			long uuidLeast = r.read(() -> "uuidLeast").int64();
+			UUID uuid = new UUID(uuidMost, uuidLeast);
 			String id = r.read(() -> "id").text();
 
-			messages[0] = new Message(id, timestamp, sensorType, value, tsId);
+			messages[0] = new Message(id, new Date(timestamp), sensorType, value, uuid);
 		});
 		return messages[0];
-	}
-
-	protected boolean containsId(String id) {
-		return store.containsId(id);
 	}
 
 	protected String getSynthese(long timestamp, int duration) {
@@ -249,6 +284,26 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		} finally {
 			indexLock.readLock().unlock();
 		}
+	}
+
+	protected void awaitWarmupTermination() {
+		while (mem.getSize() != 0) {
+			try {
+				Thread.sleep(10L);
+			} catch (InterruptedException e) {
+				LOGGER.error(":(", e);
+			}
+		}
+		CACHE_SIZE = CACHE_SIZE_REAL;
+	}
+
+	protected int getWarmupMessageCount() {
+		CACHE_SIZE = WARMUP_COUNT - 100;
+		return WARMUP_COUNT;
+	}
+
+	protected boolean containsId(String id) {
+		return store.containsId(id);
 	}
 
 	protected Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
@@ -353,9 +408,5 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		} catch (IOException e) {
 			LOGGER.error("", e);
 		}
-	}
-
-	public long getMemSize() {
-		return mem.getSize();
 	}
 }

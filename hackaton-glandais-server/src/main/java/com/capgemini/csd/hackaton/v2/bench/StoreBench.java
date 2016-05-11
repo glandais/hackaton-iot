@@ -3,6 +3,7 @@ package com.capgemini.csd.hackaton.v2.bench;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
+import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
 import com.capgemini.csd.hackaton.v2.store.StoreElasticSearch;
 import com.capgemini.csd.hackaton.v2.store.StoreH2;
@@ -21,7 +23,6 @@ import com.capgemini.csd.hackaton.v2.store.StoreH2Mem;
 import com.capgemini.csd.hackaton.v2.store.StoreH2Mem2;
 import com.capgemini.csd.hackaton.v2.store.StoreMapDB;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
-import com.capgemini.csd.hackaton.v2.store.StoreObjectDBHash;
 import com.google.common.base.Stopwatch;
 
 public class StoreBench {
@@ -41,9 +42,6 @@ public class StoreBench {
 	public static void main(String[] args) {
 		//		bench(getStoreES());
 		//		bench(getStoreH2());
-		bench(getStoreODBHash());
-		bench(getStoreODB());
-		bench(getStoreODBHash());
 		bench(getStoreODB());
 		//		bench(getStoreH2());
 		//		bench(getStoreES());
@@ -62,12 +60,18 @@ public class StoreBench {
 			if (i == 0) {
 				stopwatch = Stopwatch.createUnstarted();
 			}
-			List<Map<String, Object>> messages = new ArrayList<>(1001);
+			List<Message> messages = new ArrayList<>(1001);
 			for (int j = 0; j < N_MESSAGES; j++) {
 				String message = AbstractClient.getMessage(true);
 				Map<String, Object> map = Util.fromJson(message);
 				ids.add(map.get("id").toString());
-				messages.add(map);
+
+				long timestamp = (long) map.get("timestamp");
+				int sensorType = (int) map.get("sensorType");
+				long value = (long) map.get("value");
+				String id = (String) map.get("id");
+
+				messages.add(new Message(id, timestamp, sensorType, value, 0));
 			}
 			stopwatch.start();
 			store.indexMessages(messages);
@@ -129,12 +133,6 @@ public class StoreBench {
 
 	private static Store getStoreODB() {
 		StoreObjectDB store = new StoreObjectDB();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreODBHash() {
-		StoreObjectDBHash store = new StoreObjectDBHash();
 		store.init(getTmpDossier());
 		return store;
 	}

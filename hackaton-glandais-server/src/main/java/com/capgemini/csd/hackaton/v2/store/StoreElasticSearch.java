@@ -23,8 +23,9 @@ import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.v1.index.IndexElasticSearch;
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class StoreElasticSearch implements Store {
 
@@ -82,10 +83,10 @@ public class StoreElasticSearch implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		BulkRequestBuilder bulk = client.prepareBulk();
-		for (Map<String, Object> map : messages) {
-			bulk.add(client.prepareIndex("iot", "message").setSource(map));
+		for (Message message : messages) {
+			bulk.add(client.prepareIndex("iot", "message").setSource(message.getMap()));
 		}
 		bulk.execute().actionGet();
 	}

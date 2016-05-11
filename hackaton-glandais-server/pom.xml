@@ -15,7 +15,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -46,7 +45,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.capgemini.csd.hackaton</groupId>
-			<artifactId>hackaton-glandais-client</artifactId>
+			<artifactId>hackaton-iot-java-client</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 
@@ -87,6 +86,12 @@
 			<groupId>org.mapdb</groupId>
 			<artifactId>mapdb</artifactId>
 			<version>3.0.0-beta2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.fastjson</groupId>
+			<artifactId>boon</artifactId>
+			<version>0.33</version>
 		</dependency>
 
 		<dependency>

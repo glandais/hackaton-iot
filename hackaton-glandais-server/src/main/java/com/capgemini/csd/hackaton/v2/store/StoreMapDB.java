@@ -1,6 +1,7 @@
 package com.capgemini.csd.hackaton.v2.store;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,8 @@ import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
-import com.capgemini.csd.hackaton.Util;
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class StoreMapDB implements Store {
 
@@ -38,7 +39,8 @@ public class StoreMapDB implements Store {
 
 	@Override
 	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
-		return Util.getSummary(map, timestamp, duration);
+		// FIXME
+		return Collections.emptyMap();// Util.getSummary(map, timestamp, duration);
 	}
 
 	@Override
@@ -52,17 +54,18 @@ public class StoreMapDB implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		Map<UUID, UUID> newItems = new IdentityHashMap<>(messages.size());
 		messages.parallelStream().forEach(message -> {
-			String id = (String) message.get("id");
+			String id = (String) message.getId();
 			writeLock.lock();
 			try {
 				ids.add(id);
 			} finally {
 				writeLock.unlock();
 			}
-			Util.add(newItems, message, null);
+			// FIXME
+			//			Util.add(newItems, message.getMap(), null);
 		});
 		map.putAll(newItems);
 	}

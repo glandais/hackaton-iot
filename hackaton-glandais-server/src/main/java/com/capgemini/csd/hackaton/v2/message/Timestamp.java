@@ -1,0 +1,74 @@
+package com.capgemini.csd.hackaton.v2.message;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+public class Timestamp implements Comparable<Timestamp> {
+
+	// id incrémental, si deux messages avec le même timestamp
+	private static final AtomicLong currentId = new AtomicLong();
+
+	private long timestamp;
+
+	private long id;
+
+	public Timestamp(long timestamp) {
+		super();
+		this.timestamp = timestamp;
+		this.id = currentId.getAndIncrement();
+	}
+
+	public Timestamp(long timestamp, long id) {
+		super();
+		this.timestamp = timestamp;
+		this.id = id;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	@Override
+	public int compareTo(Timestamp o) {
+		int res = Long.compare(timestamp, o.timestamp);
+		if (res == 0) {
+			return Long.compare(id, o.id);
+		} else {
+			return res;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Timestamp other = (Timestamp) obj;
+		if (id != other.id)
+			return false;
+		if (timestamp != other.timestamp)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Timestamp [timestamp=" + timestamp + ", id=" + id + "]";
+	}
+
+}

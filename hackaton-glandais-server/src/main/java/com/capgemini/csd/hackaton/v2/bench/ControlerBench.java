@@ -2,8 +2,6 @@ package com.capgemini.csd.hackaton.v2.bench;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -11,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.client.AbstractClient;
-import com.capgemini.csd.hackaton.v2.AbstractIOTServer;
 import com.capgemini.csd.hackaton.v2.IOTServerES;
 import com.capgemini.csd.hackaton.v2.IOTServerH2;
 import com.capgemini.csd.hackaton.v2.IOTServerH2ES;
@@ -33,18 +30,11 @@ public class ControlerBench {
 	public final static Random R = new Random();
 
 	public static void main(String[] args) {
-		//		bench(getNoop());
-		//		bench(getMem());
+		//				bench(getNoop());
+		bench(getMem());
 		//				bench(getES());
-
-		bench(getODB());
+		//		bench(getODB());
 		bench(getH2());
-
-		bench(getODB());
-		bench(getH2());
-
-		//		bench(getH2());
-
 		//		bench(getH2ES());
 		//		bench(getMapDB());
 		System.exit(0);
@@ -52,17 +42,17 @@ public class ControlerBench {
 
 	private static void bench(Controler controler) {
 		Stopwatch stopwatch = Stopwatch.createUnstarted();
-		List<String> ids = new ArrayList<>();
+		//		List<String> ids = new ArrayList<>();
 		for (int i = -19999; i < MESSAGE_COUNT; i++) {
 			if (i == 0) {
 				stopwatch.start();
 			}
 			String messageId = AbstractClient.getMessageId();
-			if (i % 1000 == 0) {
-				messageId = ids.get(R.nextInt(ids.size()));
-			} else {
-				ids.add(messageId);
-			}
+			//			if (i % 1000 == 0) {
+			//				messageId = ids.get(R.nextInt(ids.size()));
+			//			} else {
+			//			ids.add(messageId);
+			//			}
 			try {
 				controler.processRequest("/messages", AbstractClient.getMessage(messageId, null, null, null));
 				if (i % 1000 == 0) {
@@ -87,10 +77,6 @@ public class ControlerBench {
 			LOGGER.error("Erreur..........", e);
 		}
 		stopwatch.stop();
-
-		if (controler instanceof AbstractIOTServer) {
-			LOGGER.info("Memory used by mem : " + ((AbstractIOTServer) controler).mem.getMemorySize());
-		}
 
 		LOGGER.info(controler.getClass().getName() + " : total : " + stopwatch.toString());
 		//		stopwatch.start();

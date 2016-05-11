@@ -1,7 +1,6 @@
 package com.capgemini.csd.hackaton.v2.store;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.v2.synthese.Summary;
+import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 
 public class StoreH2 implements Store {
 
@@ -56,13 +56,13 @@ public class StoreH2 implements Store {
 	}
 
 	@Override
-	public void indexMessages(List<Map<String, Object>> messages) {
+	public void indexMessages(List<Message> messages) {
 		Object[][] params = new Object[messages.size()][4];
 		for (int i = 0; i < messages.size(); i++) {
-			params[i][0] = messages.get(i).get("id");
-			params[i][1] = ((Date) messages.get(i).get("timestamp")).getTime();
-			params[i][2] = messages.get(i).get("sensorType");
-			params[i][3] = messages.get(i).get("value");
+			params[i][0] = messages.get(i).getId();
+			params[i][1] = messages.get(i).getTimestamp();
+			params[i][2] = messages.get(i).getSensorType();
+			params[i][3] = messages.get(i).getValue();
 		}
 		try {
 			queryRunner.batch("INSERT INTO MESSAGE (ID, TS, SENSORTYPE, VALUE) VALUES (?, ?, ?, ?)", params);

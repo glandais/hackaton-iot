@@ -10,11 +10,11 @@ import com.capgemini.csd.hackaton.v2.store.StoreH2;
 import io.airlift.airline.Command;
 
 @Command(name = "server-h2es", description = "Serveur H2 et ES")
-public class IOTServerH2ES extends AbstractIOTStoreServer {
+public class IOTServerH2ES extends AbstractIOTServer {
 
 	@Override
 	protected Mem getMem() {
-		return new MemBasic(false);
+		return new MemBasic();
 	}
 
 	@Override
