@@ -24,11 +24,9 @@ import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerNetty;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.MessageSerializer;
 import com.capgemini.csd.hackaton.v2.message.Timestamp;
 import com.capgemini.csd.hackaton.v2.queue.Queue;
 import com.capgemini.csd.hackaton.v2.queue.QueueSpiderPig;
-import com.capgemini.csd.hackaton.v2.queue.impl.MemoryMappedFIFOQueue;
 import com.capgemini.csd.hackaton.v2.store.Store;
 
 import io.airlift.airline.Option;
@@ -113,7 +111,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		startPersister();
 	}
 
-	private Queue getQueue() {
+	protected Queue getQueue() {
 		QueueSpiderPig queue = new QueueSpiderPig();
 		queue.init(dossier, "queueToPersist");
 		return queue;

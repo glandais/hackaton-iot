@@ -12,7 +12,6 @@ public class IOTServerNoop extends AbstractIOTServer {
 
 	protected void process(String json) {
 		// mise en queue pour la persistence
-		//		queueToPersist.createAppender().writeText(json);
 	}
 
 	@Override
