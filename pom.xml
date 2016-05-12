@@ -6,14 +6,9 @@
 	<groupId>com.capgemini.csd.hackaton</groupId>
 	<artifactId>hackaton-glandais</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
 
 	<name>hackaton-glandais</name>
 
-	<modules>
-		<module>hackaton-glandais-server</module>
-		<module>hackaton-glandais-final</module>
-	</modules>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<swagger-annotations-version>1.5.8</swagger-annotations-version>
@@ -47,6 +42,12 @@
 							<configuration>
 								<shadedArtifactAttached>true</shadedArtifactAttached>
 								<shadedClassifierName>uber</shadedClassifierName>
+								<transformers>
+									<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+										<mainClass>com.capgemini.csd.hackaton.v2.Main</mainClass>
+									</transformer>
+								</transformers>
 							</configuration>
 						</execution>
 					</executions>
@@ -54,6 +55,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<repositories>
+		<repository>
+			<id>objectdb</id>
+			<name>ObjectDB Repository</name>
+			<url>http://m2.objectdb.com</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -64,6 +72,67 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>19.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.capgemini.csd.hackaton</groupId>
+			<artifactId>hackaton-iot-java-client</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.airlift</groupId>
+			<artifactId>airline</artifactId>
+			<version>0.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>chronicle-queue</artifactId>
+			<version>4.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>koloboke-api-jdk8</artifactId>
+			<version>0.6.8</version>
+		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>koloboke-impl-jdk8</artifactId>
+			<version>0.6.8</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.fastjson</groupId>
+			<artifactId>boon</artifactId>
+			<version>0.33</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.objectdb</groupId>
+			<artifactId>objectdb</artifactId>
+			<version>2.6.7_07</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>jta</artifactId>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 </project>
