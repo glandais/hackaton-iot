@@ -27,7 +27,7 @@ public class Timestamp implements Comparable<Timestamp> {
 		return timestamp;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 

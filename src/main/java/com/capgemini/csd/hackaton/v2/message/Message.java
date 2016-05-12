@@ -1,5 +1,6 @@
 package com.capgemini.csd.hackaton.v2.message;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import javax.persistence.Transient;
 @NamedQueries({ @NamedQuery(name = "Message.exists", query = "SELECT COUNT(m.id) FROM Message m WHERE m.id = :id"),
 		@NamedQuery(name = "Message.summary", query = "SELECT m.sensorType, COUNT(m.id), SUM(m.value), MIN(m.value), MAX(m.value) FROM Message m "
 				+ "WHERE m.timestamp BETWEEN :start AND :end GROUP BY m.sensorType") })
-public class Message {
+public class Message implements Serializable {
 
 	private static final long serialVersionUID = -7027323607067414084L;
 
