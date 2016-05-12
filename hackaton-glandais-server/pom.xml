@@ -55,6 +55,12 @@
 			<version>0.7</version>
 		</dependency>
 
+		<!-- <dependency> -->
+		<!-- <groupId>de.ruedigermoeller</groupId> -->
+		<!-- <artifactId>fst</artifactId> -->
+		<!-- <version>2.45</version> -->
+		<!-- </dependency> -->
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -86,6 +92,12 @@
 			<groupId>org.mapdb</groupId>
 			<artifactId>mapdb</artifactId>
 			<version>3.0.0-beta2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cassandra</groupId>
+			<artifactId>cassandra-all</artifactId>
+			<version>3.5</version>
 		</dependency>
 
 		<dependency>

@@ -3,7 +3,6 @@ package com.capgemini.csd.hackaton.v2.bench;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -17,6 +16,7 @@ import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
+import com.capgemini.csd.hackaton.v2.store.StoreCassandra;
 import com.capgemini.csd.hackaton.v2.store.StoreElasticSearch;
 import com.capgemini.csd.hackaton.v2.store.StoreH2;
 import com.capgemini.csd.hackaton.v2.store.StoreH2Mem;
@@ -42,7 +42,8 @@ public class StoreBench {
 	public static void main(String[] args) {
 		//		bench(getStoreES());
 		//		bench(getStoreH2());
-		bench(getStoreODB());
+		//		bench(getStoreODB());
+		bench(getStoreCassandra());
 		//		bench(getStoreH2());
 		//		bench(getStoreES());
 		//		bench(getStoreH2Mem());
@@ -145,6 +146,12 @@ public class StoreBench {
 
 	private static Store getStoreH2Mem2() {
 		StoreH2Mem2 store = new StoreH2Mem2();
+		store.init(getTmpDossier());
+		return store;
+	}
+
+	private static Store getStoreCassandra() {
+		StoreCassandra store = new StoreCassandra();
 		store.init(getTmpDossier());
 		return store;
 	}

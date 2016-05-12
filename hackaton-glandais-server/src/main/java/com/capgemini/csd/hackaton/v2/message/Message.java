@@ -18,6 +18,8 @@ import javax.persistence.Transient;
 				+ "WHERE m.timestamp BETWEEN :start AND :end GROUP BY m.sensorType") })
 public class Message {
 
+	private static final long serialVersionUID = -7027323607067414084L;
+
 	@Id
 	@GeneratedValue
 	private Long realId;
@@ -53,28 +55,56 @@ public class Message {
 		super();
 	}
 
+	public Timestamp getTs() {
+		return new Timestamp(timestamp, idTs);
+	}
+
 	public Long getRealId() {
 		return realId;
+	}
+
+	public void setRealId(Long realId) {
+		this.realId = realId;
 	}
 
 	public String getId() {
 		return id;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public long getTimestamp() {
 		return timestamp;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public int getIdTs() {
+		return idTs;
+	}
+
+	public void setIdTs(int idTs) {
+		this.idTs = idTs;
 	}
 
 	public int getSensorType() {
 		return sensorType;
 	}
 
-	public Timestamp getTs() {
-		return new Timestamp(timestamp, idTs);
+	public void setSensorType(int sensorType) {
+		this.sensorType = sensorType;
 	}
 
 	public long getValue() {
 		return value;
+	}
+
+	public void setValue(long value) {
+		this.value = value;
 	}
 
 	public Map<String, Object> getMap() {
