@@ -16,12 +16,6 @@ import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
-import com.capgemini.csd.hackaton.v2.store.StoreCassandra;
-import com.capgemini.csd.hackaton.v2.store.StoreElasticSearch;
-import com.capgemini.csd.hackaton.v2.store.StoreH2;
-import com.capgemini.csd.hackaton.v2.store.StoreH2Mem;
-import com.capgemini.csd.hackaton.v2.store.StoreH2Mem2;
-import com.capgemini.csd.hackaton.v2.store.StoreMapDB;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 import com.google.common.base.Stopwatch;
 
@@ -43,7 +37,6 @@ public class StoreBench {
 		//		bench(getStoreES());
 		//		bench(getStoreH2());
 		//		bench(getStoreODB());
-		bench(getStoreCassandra());
 		//		bench(getStoreH2());
 		//		bench(getStoreES());
 		//		bench(getStoreH2Mem());
@@ -114,44 +107,8 @@ public class StoreBench {
 
 	}
 
-	private static Store getStoreES() {
-		StoreElasticSearch store = new StoreElasticSearch();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreMapDB() {
-		StoreMapDB store = new StoreMapDB();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreH2() {
-		StoreH2 store = new StoreH2();
-		store.init(getTmpDossier());
-		return store;
-	}
-
 	private static Store getStoreODB() {
 		StoreObjectDB store = new StoreObjectDB();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreH2Mem() {
-		StoreH2Mem store = new StoreH2Mem();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreH2Mem2() {
-		StoreH2Mem2 store = new StoreH2Mem2();
-		store.init(getTmpDossier());
-		return store;
-	}
-
-	private static Store getStoreCassandra() {
-		StoreCassandra store = new StoreCassandra();
 		store.init(getTmpDossier());
 		return store;
 	}

@@ -55,12 +55,6 @@
 			<version>0.7</version>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>de.ruedigermoeller</groupId> -->
-		<!-- <artifactId>fst</artifactId> -->
-		<!-- <version>2.45</version> -->
-		<!-- </dependency> -->
-
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -88,60 +82,11 @@
 			<version>0.6.8</version>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.mapdb</groupId>
-			<artifactId>mapdb</artifactId>
-			<version>3.0.0-beta2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cassandra</groupId>
-			<artifactId>cassandra-all</artifactId>
-			<version>3.5</version>
-		</dependency>
 
 		<dependency>
 			<groupId>io.fastjson</groupId>
 			<artifactId>boon</artifactId>
 			<version>0.33</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.strategicgains</groupId>
-			<artifactId>RestExpress</artifactId>
-			<version>0.11.3</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>2.3.1</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-core</artifactId>
-			<version>3.2.1</version>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.191</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbutils</groupId>
-			<artifactId>commons-dbutils</artifactId>
-			<version>1.6</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.jbellis</groupId>
-			<artifactId>jamm</artifactId>
-			<version>0.3.1</version>
 		</dependency>
 
 		<dependency>

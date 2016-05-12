@@ -9,11 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.client.AbstractClient;
-import com.capgemini.csd.hackaton.v2.IOTServerES;
-import com.capgemini.csd.hackaton.v2.IOTServerH2;
-import com.capgemini.csd.hackaton.v2.IOTServerH2ES;
-import com.capgemini.csd.hackaton.v2.IOTServerH2Mem;
-import com.capgemini.csd.hackaton.v2.IOTServerMapDB;
 import com.capgemini.csd.hackaton.v2.IOTServerMem;
 import com.capgemini.csd.hackaton.v2.IOTServerNoop;
 import com.capgemini.csd.hackaton.v2.IOTServerODB;
@@ -34,7 +29,6 @@ public class ControlerBench {
 		bench(getMem());
 		//				bench(getES());
 		//		bench(getODB());
-		bench(getH2());
 		//		bench(getH2ES());
 		//		bench(getMapDB());
 		System.exit(0);
@@ -101,43 +95,8 @@ public class ControlerBench {
 		return controler;
 	}
 
-	private static Controler getMapDB() {
-		IOTServerMapDB controler = new IOTServerMapDB();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getH2ES() {
-		IOTServerH2ES controler = new IOTServerH2ES();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getH2() {
-		IOTServerH2 controler = new IOTServerH2();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getH2Mem() {
-		IOTServerH2Mem controler = new IOTServerH2Mem();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
 	private static Controler getODB() {
 		IOTServerODB controler = new IOTServerODB();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getES() {
-		IOTServerES controler = new IOTServerES();
 		controler.setDossier(getTmpDossier());
 		controler.configure();
 		return controler;
