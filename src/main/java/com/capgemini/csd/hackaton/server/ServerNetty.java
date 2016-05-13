@@ -4,11 +4,15 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
 
 import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.boon.Exceptions;
 import org.boon.IO;
 
 import com.capgemini.csd.hackaton.Controler;
+import com.capgemini.csd.hackaton.Util;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufInputStream;
@@ -52,7 +56,13 @@ public class ServerNetty implements Server {
 			String result = "";
 			HttpResponseStatus status = HttpResponseStatus.OK;
 			try {
-				result = controler.processRequest(uri, message);
+				Map<String, List<String>> params;
+				if (uri.contains("?")) {
+					params = Util.parse(uri.substring(uri.indexOf('?') + 1));
+				} else {
+					params = Collections.emptyMap();
+				}
+				result = controler.processRequest(uri, params, message);
 			} catch (Exception e) {
 				result = Exceptions.asJson(e);
 				status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -91,9 +101,9 @@ public class ServerNetty implements Server {
 			p.addLast("encoder", new HttpResponseEncoder());
 			p.addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192, false));
 
-			//			p.addLast("inflater", new HttpContentDecompressor());
-			//			p.addLast("chunkWriter", new ChunkedWriteHandler());
-			//			p.addLast("deflater", new HttpContentCompressor());
+			// p.addLast("inflater", new HttpContentDecompressor());
+			// p.addLast("chunkWriter", new ChunkedWriteHandler());
+			// p.addLast("deflater", new HttpContentCompressor());
 			p.addLast("aggregator", new HttpObjectAggregator(1024));
 
 			p.addLast("handler", new ServerNettyRequestHandler());
@@ -107,8 +117,8 @@ public class ServerNetty implements Server {
 	public void start(Controler controler, int port) {
 		this.controler = controler;
 		// Configure the server.
-		//		int threads = 10;// 2 * Runtime.getRuntime().availableProcessors();
-		loupGroup = new NioEventLoopGroup();
+		// int threads = 10;// 2 * Runtime.getRuntime().availableProcessors();
+		loupGroup = new NioEventLoopGroup(10);
 		try {
 			ServerBootstrap b = new ServerBootstrap();
 			b.option(ChannelOption.SO_BACKLOG, 1024);
@@ -119,9 +129,10 @@ public class ServerNetty implements Server {
 			b.childOption(ChannelOption.SO_REUSEADDR, true);
 			b.childOption(ChannelOption.MAX_MESSAGES_PER_READ, Integer.MAX_VALUE);
 
-			//			b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-			//					.handler(new LoggingHandler(LogLevel.INFO))
-			//					.childHandler(new ServerNettyChannelInitializer());
+			// b.group(bossGroup,
+			// workerGroup).channel(NioServerSocketChannel.class)
+			// .handler(new LoggingHandler(LogLevel.INFO))
+			// .childHandler(new ServerNettyChannelInitializer());
 
 			serverChannel = b.bind(new InetSocketAddress(port)).sync().channel();
 		} catch (InterruptedException e) {

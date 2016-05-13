@@ -1,8 +1,12 @@
 package com.capgemini.csd.hackaton;
 
+import java.util.Collection;
+import java.util.Map;
+
 public interface Controler {
 
-	String processRequest(String uri, String message) throws Exception;
+	String processRequest(String uri, Map<String, ? extends Collection<String>> params, String message)
+			throws Exception;
 
 	void setDossier(String dossier);
 

@@ -1,5 +1,7 @@
 package com.capgemini.csd.hackaton.v1.execution;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -39,50 +41,51 @@ public class ExecutionServer extends Commande implements Controler {
 
 		if (index.isInMemory()) {
 			index();
-			//			int availableProcessors = Runtime.getRuntime().availableProcessors();
-			//			Thread[] indexers = new Thread[availableProcessors];
-			//			for (int i = 0; i < availableProcessors; i++) {
-			//				indexers[i] = new Thread(() -> index());
-			//				indexers[i].start();
-			//			}
-			//			for (int i = 0; i < availableProcessors; i++) {
-			//				try {
-			//					indexers[i].join();
-			//				} catch (InterruptedException e) {
-			//					LOGGER.error("Died", e);
-			//				}
-			//			}
+			// int availableProcessors =
+			// Runtime.getRuntime().availableProcessors();
+			// Thread[] indexers = new Thread[availableProcessors];
+			// for (int i = 0; i < availableProcessors; i++) {
+			// indexers[i] = new Thread(() -> index());
+			// indexers[i].start();
+			// }
+			// for (int i = 0; i < availableProcessors; i++) {
+			// try {
+			// indexers[i].join();
+			// } catch (InterruptedException e) {
+			// LOGGER.error("Died", e);
+			// }
+			// }
 		}
 		LOGGER.info(index.getSize() + " documents dans l'index.");
 
-		//		LOGGER.info("Initialisation du thread d'indexation.");
-		//		Thread thread = new Thread(() -> {
-		//			// boucle de traitement de la queue
-		//			while (true) {
-		//				String message = queue.getMessage();
-		//				if (message != null) {
-		//					while (message != null) {
-		//						try {
-		//							index.index(message, false);
-		//						} catch (Exception e) {
-		//							LOGGER.error("Echec à l'indexation de " + message);
-		//						}
-		//						message = queue.getMessage();
-		//					}
-		//				} else {
-		//					Sys.sleep(10L);
-		//				}
-		//			}
-		//		});
-		//		thread.setName("indexer");
-		//		thread.setPriority(Thread.MIN_PRIORITY);
-		//		thread.start();
+		// LOGGER.info("Initialisation du thread d'indexation.");
+		// Thread thread = new Thread(() -> {
+		// // boucle de traitement de la queue
+		// while (true) {
+		// String message = queue.getMessage();
+		// if (message != null) {
+		// while (message != null) {
+		// try {
+		// index.index(message, false);
+		// } catch (Exception e) {
+		// LOGGER.error("Echec à l'indexation de " + message);
+		// }
+		// message = queue.getMessage();
+		// }
+		// } else {
+		// Sys.sleep(10L);
+		// }
+		// }
+		// });
+		// thread.setName("indexer");
+		// thread.setPriority(Thread.MIN_PRIORITY);
+		// thread.start();
 
 		LOGGER.info("Démarrage du serveur");
 		server.start(this, getPort());
 		LOGGER.info("Serveur démarré");
 
-		//		warmup();
+		// warmup();
 
 		LOGGER.info("Serveur prêt");
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -135,7 +138,8 @@ public class ExecutionServer extends Commande implements Controler {
 
 	}
 
-	public String processRequest(String uri, String message) throws Exception {
+	public String processRequest(String uri, Map<String, ? extends Collection<String>> params, String message)
+			throws Exception {
 		String result = "";
 		try {
 			if (uri.equals("/messages")) {

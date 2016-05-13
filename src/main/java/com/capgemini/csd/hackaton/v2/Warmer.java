@@ -3,6 +3,7 @@ package com.capgemini.csd.hackaton.v2;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class Warmer {
 		LOGGER.info("Envoi de " + (WARMUP_COUNT / 2) + " messages en direct");
 		for (int i = 0; i < WARMUP_COUNT / 2; i++) {
 			try {
-				abstractIOTServer.processRequest("/messages", AbstractClient.getMessage(true));
+				abstractIOTServer.processRequest("/messages", Collections.emptyMap(), AbstractClient.getMessage(true));
 			} catch (Exception e) {
 				LOGGER.error(":(", e);
 			}

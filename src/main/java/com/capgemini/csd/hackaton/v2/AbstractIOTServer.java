@@ -3,6 +3,7 @@ package com.capgemini.csd.hackaton.v2;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerNetty;
+import com.capgemini.csd.hackaton.server.ServerUndertow;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.queue.Queue;
@@ -84,7 +86,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	@Override
 	public void run() {
-		Warmer.warmup(this);
+		warmup();
 		startServer(true);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -94,9 +96,13 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		});
 	}
 
+	protected void warmup() {
+		Warmer.warmup(this);
+	}
+
 	public void startServer(boolean await) {
 		configure();
-		this.server = new ServerNetty();
+		this.server = new ServerUndertow();
 		server.start(this, port);
 		LOGGER.info("Serveur démarré");
 		if (await) {
@@ -124,29 +130,29 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	@Override
-	public String processRequest(String uri, String message) throws Exception {
+	public String processRequest(String uri, Map<String, ? extends Collection<String>> params, String message)
+			throws Exception {
 		String result = "";
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
 				result = "OK";
 			} else if (uri.startsWith("/messages/synthesis?")) {
-				Map<String, List<String>> params = Util.parse(uri.substring(uri.indexOf('?') + 1));
-				List<String> ts = params.get("timestamp");
+				Collection<String> ts = params.get("timestamp");
 				long timestamp = 0;
 				if (ts == null) {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.HOUR, -1);
 					timestamp = cal.getTimeInMillis();
 				} else {
-					timestamp = ISODateTimeFormat.dateTimeParser().parseMillis(ts.get(0));
+					timestamp = ISODateTimeFormat.dateTimeParser().parseMillis(ts.iterator().next());
 				}
-				List<String> durations = params.get("duration");
+				Collection<String> durations = params.get("duration");
 				int duration = 0;
 				if (durations == null) {
 					duration = 3600;
 				} else {
-					duration = Integer.valueOf(durations.get(0));
+					duration = Integer.valueOf(durations.iterator().next());
 				}
 				result = getSynthese(timestamp, duration);
 			} else if (uri.equals("/index")) {
@@ -161,7 +167,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public void close() {
 		LOGGER.info("Fermeture");
-		server.close();
+		if (server != null) {
+			server.close();
+		}
 		mem.close();
 		queue.close();
 		store.close();
