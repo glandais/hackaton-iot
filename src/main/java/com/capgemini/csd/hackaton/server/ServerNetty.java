@@ -65,7 +65,6 @@ public class ServerNetty implements Server {
 			if (HttpHeaders.isKeepAlive(request)) {
 				response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 				response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-				//				response.headers().set("Keep-Alive", "timeout=60, max=100000");
 				ctx.writeAndFlush(response);
 			} else {
 				ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
