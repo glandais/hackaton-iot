@@ -24,9 +24,7 @@ import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerNetty;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
 import com.capgemini.csd.hackaton.v2.queue.Queue;
-import com.capgemini.csd.hackaton.v2.queue.QueueSpiderPig;
 import com.capgemini.csd.hackaton.v2.store.Store;
 
 import io.airlift.airline.Option;
@@ -38,7 +36,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public static final boolean TEST_ID = false;
 
-	public static int CACHE_SIZE = 1100000;
+	public static int CACHE_SIZE = 999;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
@@ -70,6 +68,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	protected abstract Store getStore();
 
+	protected abstract Queue getQueue();
+
 	public int getPort() {
 		return port;
 	}
@@ -94,29 +94,6 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		});
 	}
 
-	public void configure() {
-		dossier = new File(dossier).getAbsolutePath();
-		LOGGER.info("Dossier : " + dossier);
-		new File(dossier).mkdirs();
-
-		// liste de tous les messages
-		queue = getQueue();
-
-		mem = getMem();
-		store = getStore();
-
-		// enregistrement des messages non enregistrés
-		index();
-
-		startPersister();
-	}
-
-	protected Queue getQueue() {
-		QueueSpiderPig queue = new QueueSpiderPig();
-		queue.init(dossier);
-		return queue;
-	}
-
 	public void startServer(boolean await) {
 		configure();
 		this.server = new ServerNetty();
@@ -127,10 +104,28 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		}
 	}
 
+	public void configure() {
+		dossier = new File(dossier).getAbsolutePath();
+		LOGGER.info("Dossier : " + dossier);
+		new File(dossier).mkdirs();
+
+		// liste de tous les messages
+		queue = getQueue();
+		queue.init(dossier);
+
+		mem = getMem();
+		store = getStore();
+		store.init(dossier);
+
+		// enregistrement des messages non enregistrés
+		index();
+
+		startPersister();
+	}
+
 	@Override
 	public String processRequest(String uri, String message) throws Exception {
 		String result = "";
-		//		System.out.println(uri);
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
@@ -166,9 +161,10 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public void close() {
 		LOGGER.info("Fermeture");
-		mem.close();
 		server.close();
+		mem.close();
 		queue.close();
+		store.close();
 	}
 
 	protected void process(String json) {
@@ -178,7 +174,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		if (TEST_ID) {
 			idLock.lock();
 			try {
-				if (mem.containsId(id) || containsId(id)) {
+				if (mem.containsId(id) || store.containsId(id)) {
 					throw new RuntimeException("ID existant : " + id);
 				}
 				mem.putId(id);
@@ -190,10 +186,6 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		mem.index(message);
 		// mise en queue pour la persistence
 		queue.put(message);
-	}
-
-	protected boolean containsId(String id) {
-		return store.containsId(id);
 	}
 
 	protected String getSynthese(long timestamp, int duration) {

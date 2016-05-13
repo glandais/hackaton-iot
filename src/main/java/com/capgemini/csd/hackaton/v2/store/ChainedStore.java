@@ -42,4 +42,18 @@ public class ChainedStore implements Store {
 		}
 	}
 
+	@Override
+	public void init(String dossier) {
+		for (Store store : stores) {
+			store.init(dossier);
+		}
+	}
+
+	@Override
+	public void close() {
+		for (Store store : stores) {
+			store.close();
+		}
+	}
+
 }

@@ -25,6 +25,7 @@ public class StoreObjectDB implements Store {
 
 	private EntityManager em;
 
+	@Override
 	public void init(String dossier) {
 		entityManagerFactory = Persistence.createEntityManagerFactory(dossier + "/messages.odb");
 		em = entityManagerFactory.createEntityManager();
@@ -48,12 +49,17 @@ public class StoreObjectDB implements Store {
 	@Override
 	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
 		Map<Integer, Summary> res = new HashMap<>();
-		List<Object[]> summaries = em.createNamedQuery("Message.summary").setParameter("start", new Date(timestamp))
-				.setParameter("end", new Date(timestamp + 1000 * duration)).getResultList();
+		List<Object[]> summaries = em.createNamedQuery("Message.summary").setParameter("start", timestamp)
+				.setParameter("end", timestamp + 1000 * duration).getResultList();
 		res = summaries.stream()
 				.collect(Collectors.toMap(a -> (Integer) a[0], a -> new Summary(((Number) a[0]).intValue(),
 						(Number) a[1], (Number) a[2], (Number) a[3], (Number) a[4])));
 		return res;
 	}
 
+	@Override
+	public void close() {
+		em.close();
+		entityManagerFactory.close();
+	}
 }

@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +16,7 @@ import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
+import com.capgemini.csd.hackaton.v2.store.StoreLucene;
 import com.capgemini.csd.hackaton.v2.store.StoreNoop;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 import com.google.common.base.Stopwatch;
@@ -33,7 +34,7 @@ public class StoreBench implements Runnable {
 
 	private static final int N_CONTAINSID = 100000;
 
-	private static final int N_SYNTHESES = 1;
+	private static final int N_SYNTHESES = 10;
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(StoreBench.class);
 
@@ -45,24 +46,34 @@ public class StoreBench implements Runnable {
 	@Option(type = OptionType.GLOBAL, name = { "-odb" }, description = "ODB")
 	protected boolean odb = false;
 
+	@Option(type = OptionType.GLOBAL, name = { "-lucene" }, description = "Lucene")
+	protected boolean lucene = false;
+
 	public static void main(String[] args) {
 		StoreBench storeBench = new StoreBench();
-		storeBench.noop = true;
+		//		storeBench.noop = true;
 		storeBench.odb = true;
+		storeBench.lucene = true;
 		storeBench.run();
 	}
 
 	@Override
 	public void run() {
+		if (lucene) {
+			bench(new StoreLucene(512));
+		}
 		if (noop) {
-			bench(getStoreNoop());
+			bench(new StoreNoop());
 		}
 		if (odb) {
-			bench(getStoreODB());
+			bench(new StoreObjectDB());
 		}
 	}
 
 	private static void bench(Store store) {
+		String tmpDossier = getTmpDossier();
+		new File(tmpDossier).mkdirs();
+		store.init(tmpDossier);
 		Stopwatch stopwatch = Stopwatch.createUnstarted();
 		store.getSummary(System.currentTimeMillis() - 3600 * 1000, 3600);
 		List<String> ids = new ArrayList<>();
@@ -72,16 +83,9 @@ public class StoreBench implements Runnable {
 			}
 			List<Message> messages = new ArrayList<>(1001);
 			for (int j = 0; j < N_MESSAGES; j++) {
-				String message = AbstractClient.getMessage(true);
-				Map<String, Object> map = Util.fromJson(message);
-				ids.add(map.get("id").toString());
-
-				long timestamp = ((Number) map.get("timestamp")).longValue();
-				int sensorType = ((Number) map.get("sensorType")).intValue();
-				long value = ((Number) map.get("value")).longValue();
-				String id = (String) map.get("id");
-
-				messages.add(new Message(id, timestamp, sensorType, value, 0));
+				Message message = Util.messageFromJson(AbstractClient.getMessage(true));
+				ids.add(message.getId());
+				messages.add(message);
 			}
 			stopwatch.start();
 			store.indexMessages(messages);
@@ -114,23 +118,21 @@ public class StoreBench implements Runnable {
 			if (i == 0) {
 				stopwatch.start();
 			}
-			store.getSummary(System.currentTimeMillis() - 3600 * 1000, 3600);
+			store.getSummary(System.currentTimeMillis() - 3600 * 1000, 3700);
 		}
 		stopwatch.stop();
 		long synthesesPerSec = (long) ((1.0 * N_SYNTHESES) / (stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0));
 		LOGGER.info(store.getClass().getName() + " : getSummary (" + N_SYNTHESES + ") : " + stopwatch.toString() + " - "
 				+ synthesesPerSec + " summaries/s");
 
-	}
+		store.close();
 
-	private static Store getStoreNoop() {
-		return new StoreNoop();
-	}
+		try {
+			FileUtils.deleteDirectory(new File(tmpDossier));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-	private static Store getStoreODB() {
-		StoreObjectDB store = new StoreObjectDB();
-		store.init(getTmpDossier());
-		return store;
 	}
 
 	private static String getTmpDossier() {

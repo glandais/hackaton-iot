@@ -11,4 +11,8 @@ public interface Store extends SummaryComputer {
 
 	void indexMessages(List<Message> messages);
 
+	void init(String dossier);
+
+	void close();
+
 }

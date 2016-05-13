@@ -5,12 +5,17 @@ import com.capgemini.csd.hackaton.v2.mem.MemBasic;
 import com.capgemini.csd.hackaton.v2.queue.Queue;
 import com.capgemini.csd.hackaton.v2.queue.QueueMem;
 import com.capgemini.csd.hackaton.v2.store.Store;
-import com.capgemini.csd.hackaton.v2.store.StoreNoop;
+import com.capgemini.csd.hackaton.v2.store.StoreLucene;
 
 import io.airlift.airline.Command;
 
-@Command(name = "server-mem", description = "Serveur Mem")
-public class IOTServerMem extends AbstractIOTServer {
+@Command(name = "server-lucene", description = "Serveur Lucene")
+public class IOTServerLucene extends AbstractIOTServer {
+
+	@Override
+	protected Queue getQueue() {
+		return new QueueMem();
+	}
 
 	@Override
 	protected Mem getMem() {
@@ -19,12 +24,7 @@ public class IOTServerMem extends AbstractIOTServer {
 
 	@Override
 	protected Store getStore() {
-		return new StoreNoop();
-	}
-
-	@Override
-	protected Queue getQueue() {
-		return new QueueMem();
+		return new StoreLucene(512);
 	}
 
 }

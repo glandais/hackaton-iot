@@ -16,7 +16,7 @@ public class Main {
 		CliBuilder<Runnable> builder = Cli.<Runnable> builder("hackaton-glandais").withDefaultCommand(Help.class)
 				.withCommands(Help.class, IOTServerODB.class, IOTServerMem.class, IOTServerNoop.class,
 						ExecutionClient.class, StoreBench.class, ParseBench.class, ControlerBench.class,
-						QueueBench.class);
+						QueueBench.class, IOTServerLucene.class);
 
 		Cli<Runnable> parser = builder.build();
 		parser.parse(args).run();

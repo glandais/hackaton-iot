@@ -29,9 +29,11 @@ public class Warmer {
 
 		Client client = new ClientAsyncHTTP();
 		client.setHostPort("127.0.0.1", abstractIOTServer.getPort());
+		LOGGER.info("Envoi de " + (WARMUP_COUNT / 2) + " messages en HTTP");
 		for (int i = 0; i < WARMUP_COUNT / 2; i++) {
 			client.sendMessage(true);
 		}
+		LOGGER.info("Envoi de " + (WARMUP_COUNT / 2) + " messages en direct");
 		for (int i = 0; i < WARMUP_COUNT / 2; i++) {
 			try {
 				abstractIOTServer.processRequest("/messages", AbstractClient.getMessage(true));
@@ -41,10 +43,14 @@ public class Warmer {
 		}
 		Calendar start = Calendar.getInstance();
 		start.add(Calendar.HOUR_OF_DAY, -1);
+		LOGGER.info("Demande de synthèse");
 		client.getSynthese(start.getTimeInMillis(), 3600 * 2);
+		LOGGER.info("Attente fin indexation");
 		awaitWarmupTermination(abstractIOTServer);
+		LOGGER.info("Demande de synthèse");
 		client.getSynthese(start.getTimeInMillis(), 3600 * 2);
 
+		LOGGER.info("Fermeture");
 		client.shutdown();
 		abstractIOTServer.close();
 		FileUtils.deleteQuietly(new File(abstractIOTServer.getDossier()));

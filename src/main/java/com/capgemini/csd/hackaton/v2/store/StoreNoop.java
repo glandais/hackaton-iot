@@ -23,4 +23,12 @@ public class StoreNoop implements Store {
 	public void indexMessages(List<Message> messages) {
 	}
 
+	@Override
+	public void init(String dossier) {
+	}
+
+	@Override
+	public void close() {
+	}
+
 }

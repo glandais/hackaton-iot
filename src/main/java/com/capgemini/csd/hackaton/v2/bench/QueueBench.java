@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.queue.Queue;
+import com.capgemini.csd.hackaton.v2.queue.QueueMem;
 import com.capgemini.csd.hackaton.v2.queue.QueueSpiderPig;
 import com.google.common.base.Stopwatch;
 
@@ -23,8 +24,14 @@ public class QueueBench implements Runnable {
 	@Option(type = OptionType.GLOBAL, name = { "-sp" }, description = "SpiderPig")
 	protected boolean sp = false;
 
+	@Option(type = OptionType.GLOBAL, name = { "-mem" }, description = "Mem")
+	protected boolean mem = false;
+
 	@Override
 	public void run() {
+		if (mem) {
+			bench(new QueueMem());
+		}
 		if (sp) {
 			bench(new QueueSpiderPig());
 		}
