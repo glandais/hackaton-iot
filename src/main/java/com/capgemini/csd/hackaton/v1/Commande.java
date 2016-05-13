@@ -76,6 +76,10 @@ public abstract class Commande implements Runnable {
 		return dossier;
 	}
 
+	public void setDossier(String dossier) {
+		this.dossier = dossier;
+	}
+
 	public String getClientClass() {
 		return clientClass;
 	}

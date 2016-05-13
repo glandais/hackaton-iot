@@ -8,6 +8,8 @@ public interface Queue {
 
 	void put(Message mes);
 
+	void init(String dossier);
+
 	void close();
 
 }

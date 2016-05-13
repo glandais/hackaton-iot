@@ -16,10 +16,16 @@ import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
+import com.capgemini.csd.hackaton.v2.store.StoreNoop;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 import com.google.common.base.Stopwatch;
 
-public class StoreBench {
+import io.airlift.airline.Command;
+import io.airlift.airline.Option;
+import io.airlift.airline.OptionType;
+
+@Command(name = "bench-store", description = "Bench store")
+public class StoreBench implements Runnable {
 
 	private static final int N_MESSAGES = 1000;
 
@@ -33,17 +39,27 @@ public class StoreBench {
 
 	public final static Random R = new Random();
 
+	@Option(type = OptionType.GLOBAL, name = { "-noop" }, description = "Noop")
+	protected boolean noop = false;
+
+	@Option(type = OptionType.GLOBAL, name = { "-odb" }, description = "ODB")
+	protected boolean odb = false;
+
 	public static void main(String[] args) {
-		//		bench(getStoreES());
-		//		bench(getStoreH2());
-		//		bench(getStoreODB());
-		//		bench(getStoreH2());
-		//		bench(getStoreES());
-		//		bench(getStoreH2Mem());
-		//		bench(getStoreH2());
-		//		bench(getStoreES());
-		//		bench(getStoreH2Mem());
-		//		bench(getStoreMapDB());
+		StoreBench storeBench = new StoreBench();
+		storeBench.noop = true;
+		storeBench.odb = true;
+		storeBench.run();
+	}
+
+	@Override
+	public void run() {
+		if (noop) {
+			bench(getStoreNoop());
+		}
+		if (odb) {
+			bench(getStoreODB());
+		}
 	}
 
 	private static void bench(Store store) {
@@ -60,9 +76,9 @@ public class StoreBench {
 				Map<String, Object> map = Util.fromJson(message);
 				ids.add(map.get("id").toString());
 
-				long timestamp = (long) map.get("timestamp");
-				int sensorType = (int) map.get("sensorType");
-				long value = (long) map.get("value");
+				long timestamp = ((Number) map.get("timestamp")).longValue();
+				int sensorType = ((Number) map.get("sensorType")).intValue();
+				long value = ((Number) map.get("value")).longValue();
 				String id = (String) map.get("id");
 
 				messages.add(new Message(id, timestamp, sensorType, value, 0));
@@ -107,6 +123,10 @@ public class StoreBench {
 
 	}
 
+	private static Store getStoreNoop() {
+		return new StoreNoop();
+	}
+
 	private static Store getStoreODB() {
 		StoreObjectDB store = new StoreObjectDB();
 		store.init(getTmpDossier());
@@ -117,6 +137,7 @@ public class StoreBench {
 		try {
 			File tmpFile = File.createTempFile("bench", "store");
 			tmpFile.delete();
+			tmpFile.mkdirs();
 			return tmpFile.getAbsolutePath();
 		} catch (IOException e) {
 			throw new RuntimeException(e);

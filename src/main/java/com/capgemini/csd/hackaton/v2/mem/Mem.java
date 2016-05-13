@@ -11,7 +11,7 @@ public interface Mem extends SummaryComputer {
 
 	boolean containsId(String id);
 
-	Timestamp index(Map<String, Object> message);
+	void index(Message message);
 
 	void removeMessages(List<Message> messages);
 

@@ -14,10 +14,11 @@ public class QueueSpiderPig implements Queue {
 
 	protected ReentrantReadWriteLock queueLock = new ReentrantReadWriteLock();
 
-	public void init(String dossier, String string) {
+	@Override
+	public void init(String dossier) {
 		try {
 			File file = new File(dossier, "queueToPersist");
-			queue = new MemoryMappedFIFOQueue<Message>(file, new MessageSerializer(), 1024 * 1024 * 1024);
+			queue = new MemoryMappedFIFOQueue<Message>(file, new MessageSerializer(), 256 * 1024 * 1024);
 			if (!file.exists()) {
 				queue.createAndOpen();
 			} else {

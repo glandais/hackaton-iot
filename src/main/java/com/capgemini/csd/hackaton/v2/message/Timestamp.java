@@ -4,18 +4,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Timestamp implements Comparable<Timestamp> {
 
-	// id incrémental, si deux messages avec le même timestamp
-	private static final AtomicInteger currentId = new AtomicInteger();
-
 	private long timestamp;
 
 	private int id;
-
-	public Timestamp(long timestamp) {
-		super();
-		this.timestamp = timestamp;
-		this.id = currentId.getAndIncrement();
-	}
 
 	public Timestamp(long timestamp, int id) {
 		super();

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,12 @@ import com.capgemini.csd.hackaton.v2.IOTServerNoop;
 import com.capgemini.csd.hackaton.v2.IOTServerODB;
 import com.google.common.base.Stopwatch;
 
-public class ControlerBench {
+import io.airlift.airline.Command;
+import io.airlift.airline.Option;
+import io.airlift.airline.OptionType;
+
+@Command(name = "bench-controler", description = "Bench controler")
+public class ControlerBench implements Runnable {
 
 	private static final int MESSAGE_COUNT = 100000;
 
@@ -24,17 +30,42 @@ public class ControlerBench {
 
 	public final static Random R = new Random();
 
+	@Option(type = OptionType.GLOBAL, name = { "-noop" }, description = "Noop")
+	protected boolean noop = false;
+
+	@Option(type = OptionType.GLOBAL, name = { "-mem" }, description = "Mem")
+	protected boolean mem = false;
+
+	@Option(type = OptionType.GLOBAL, name = { "-odb" }, description = "ODB")
+	protected boolean odb = false;
+
 	public static void main(String[] args) {
-		//				bench(getNoop());
-		bench(getMem());
-		//				bench(getES());
-		//		bench(getODB());
-		//		bench(getH2ES());
-		//		bench(getMapDB());
+		ControlerBench controlerBench = new ControlerBench();
+		controlerBench.noop = true;
+		controlerBench.mem = true;
+		controlerBench.odb = true;
+		controlerBench.run();
+	}
+
+	@Override
+	public void run() {
+		if (noop) {
+			bench(new IOTServerNoop());
+		}
+		if (mem) {
+			bench(new IOTServerMem());
+		}
+		if (odb) {
+			bench(new IOTServerODB());
+		}
 		System.exit(0);
 	}
 
-	private static void bench(Controler controler) {
+	private void bench(Controler controler) {
+		String dossier = getTmpDossier();
+		controler.setDossier(dossier);
+		controler.configure();
+
 		Stopwatch stopwatch = Stopwatch.createUnstarted();
 		//		List<String> ids = new ArrayList<>();
 		for (int i = -19999; i < MESSAGE_COUNT; i++) {
@@ -73,39 +104,19 @@ public class ControlerBench {
 		stopwatch.stop();
 
 		LOGGER.info(controler.getClass().getName() + " : total : " + stopwatch.toString());
-		//		stopwatch.start();
-		//		try {
-		//			controler.processRequest("/index", "");
-		//		} catch (Exception e) {
-		//			LOGGER.error("Erreur..........", e);
-		//		}
+		controler.close();
+		try {
+			FileUtils.deleteDirectory(new File(dossier));
+		} catch (IOException e) {
+			LOGGER.error("", e);
+		}
 	}
 
-	private static Controler getNoop() {
-		IOTServerNoop controler = new IOTServerNoop();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getMem() {
-		IOTServerMem controler = new IOTServerMem();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static Controler getODB() {
-		IOTServerODB controler = new IOTServerODB();
-		controler.setDossier(getTmpDossier());
-		controler.configure();
-		return controler;
-	}
-
-	private static String getTmpDossier() {
+	private String getTmpDossier() {
 		try {
 			File tmpFile = File.createTempFile("bench", "store");
 			tmpFile.delete();
+			tmpFile.mkdirs();
 			return tmpFile.getAbsolutePath();
 		} catch (IOException e) {
 			throw new RuntimeException(e);

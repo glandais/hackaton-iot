@@ -3,6 +3,7 @@ package com.capgemini.csd.hackaton;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -21,18 +22,29 @@ import java.util.stream.Stream;
 import org.boon.json.JsonFactory;
 import org.joda.time.DateTime;
 
+import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.client.Summary;
+import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.message.Timestamp;
 import com.capgemini.csd.hackaton.v2.message.Value;
+import com.squareup.moshi.JsonReader;
+
+import okio.Buffer;
 
 public class Util {
 
+	// id incrémental, si deux messages avec le même timestamp
+	private static final AtomicInteger currentId = new AtomicInteger();
+
 	public static void main(String[] args) {
-		TreeMap<Timestamp, Value> map = new TreeMap<>();
-		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 200));
-		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 100));
-		Map<Integer, Summary> summary = getSummary(map, 0, 1000);
-		System.out.println(summary);
+		String json = AbstractClient.getMessage(true);
+		System.out.println(json);
+		System.out.println(messageFromJson(json).toString());
+		//		TreeMap<Timestamp, Value> map = new TreeMap<>();
+		//		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 200));
+		//		map.put(new Timestamp(1), new Value(0, Long.MAX_VALUE - 100));
+		//		Map<Integer, Summary> summary = getSummary(map, 0, 1000);
+		//		System.out.println(summary);
 	}
 
 	public static final Map<Integer, Summary> getSummary(NavigableMap<Timestamp, Value> memoryMap, long timestamp,
@@ -52,13 +64,9 @@ public class Util {
 		return map;
 	}
 
-	public static final Timestamp add(Map<Timestamp, Value> map, Map<String, Object> message, Lock w) {
-		long timestamp = (long) message.get("timestamp");
-		int sensorId = ((Number) message.get("sensorType")).intValue();
-		long value = ((Number) message.get("value")).longValue();
-
-		Timestamp ts = new Timestamp(timestamp);
-		Value val = new Value(sensorId, value);
+	public static final void add(Map<Timestamp, Value> map, Message message, Lock w) {
+		Timestamp ts = new Timestamp(message.getTimestamp(), message.getIdTs());
+		Value val = new Value(message.getSensorType(), message.getValue());
 
 		if (w != null) {
 			w.lock();
@@ -70,8 +78,6 @@ public class Util {
 				w.unlock();
 			}
 		}
-
-		return ts;
 	}
 
 	public static Map<String, List<String>> parse(final String query) {
@@ -96,6 +102,38 @@ public class Util {
 		} catch (final UnsupportedEncodingException e) {
 			throw new RuntimeException("Impossible: UTF-8 is a required encoding", e);
 		}
+	}
+
+	public static enum State {
+		INIT, READING_KEY, WAITING_COLON, WAITING_VALUE_START, READING_VALUE_STRING, READING_VALUE_STRING_ESCAPED, READING_VALUE_NUMBER, VALUE;
+	}
+
+	public static Message messageFromJson(String json) {
+		JsonReader jsonReader = JsonReader.of(new Buffer().writeUtf8(json));
+		String id = null;
+		long timestamp = 0;
+		int sensorType = 0;
+		long value = 0;
+		int idTs = currentId.getAndIncrement();
+		try {
+			jsonReader.beginObject();
+			while (jsonReader.hasNext()) {
+				String name = jsonReader.nextName();
+				if (name.equals("id")) {
+					id = jsonReader.nextString();
+				} else if (name.equals("timestamp")) {
+					String tsFormatted = jsonReader.nextString();
+					timestamp = DateTime.parse(tsFormatted).getMillis();
+				} else if (name.equals("sensorType")) {
+					sensorType = jsonReader.nextInt();
+				} else if (name.equals("value")) {
+					value = jsonReader.nextLong();
+				}
+			}
+			jsonReader.close();
+		} catch (IOException e) {
+		}
+		return new Message(id, timestamp, sensorType, value, idTs);
 	}
 
 	public static Map fromJson(String message) {

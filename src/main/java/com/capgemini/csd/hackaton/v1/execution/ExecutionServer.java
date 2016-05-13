@@ -129,6 +129,12 @@ public class ExecutionServer extends Commande implements Controler {
 		client.shutdown();
 	}
 
+	@Override
+	public void configure() {
+		// TODO Auto-generated method stub
+
+	}
+
 	public String processRequest(String uri, String message) throws Exception {
 		String result = "";
 		try {
@@ -148,7 +154,7 @@ public class ExecutionServer extends Commande implements Controler {
 		return result;
 	}
 
-	protected void close() {
+	public void close() {
 		LOGGER.info("Fermeture");
 		server.close();
 		queue.close();
@@ -168,4 +174,5 @@ public class ExecutionServer extends Commande implements Controler {
 	public boolean isServer() {
 		return true;
 	}
+
 }

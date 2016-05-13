@@ -6,9 +6,9 @@ import java.util.Map;
 
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
 
 public class MemNoop implements Mem {
+
 	@Override
 	public Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
 		return Collections.emptyMap();
@@ -28,8 +28,7 @@ public class MemNoop implements Mem {
 	}
 
 	@Override
-	public Timestamp index(Map<String, Object> message) {
-		return null;
+	public void index(Message message) {
 	}
 
 	@Override

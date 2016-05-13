@@ -76,8 +76,8 @@ public class MemBasic implements Mem {
 		}
 	}
 
-	public Timestamp index(Map<String, Object> message) {
-		return Util.add(memoryMap, message, writeLock);
+	public void index(Message message) {
+		Util.add(memoryMap, message, writeLock);
 	}
 
 	public void removeMessages(List<Message> messages) {

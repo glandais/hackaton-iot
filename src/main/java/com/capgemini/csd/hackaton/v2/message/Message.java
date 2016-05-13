@@ -113,4 +113,10 @@ public class Message implements Serializable {
 		return Collections.emptyMap();
 	}
 
+	@Override
+	public String toString() {
+		return "Message [realId=" + realId + ", id=" + id + ", timestamp=" + timestamp + ", idTs=" + idTs
+				+ ", sensorType=" + sensorType + ", value=" + value + "]";
+	}
+
 }

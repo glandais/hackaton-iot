@@ -113,7 +113,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	protected Queue getQueue() {
 		QueueSpiderPig queue = new QueueSpiderPig();
-		queue.init(dossier, "queueToPersist");
+		queue.init(dossier);
 		return queue;
 	}
 
@@ -164,7 +164,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		return result;
 	}
 
-	protected void close() {
+	public void close() {
 		LOGGER.info("Fermeture");
 		mem.close();
 		server.close();
@@ -172,8 +172,8 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected void process(String json) {
-		Map<String, Object> message = Util.fromJson(json);
-		String id = (String) message.get("id");
+		Message message = Util.messageFromJson(json);
+		String id = message.getId();
 
 		if (TEST_ID) {
 			idLock.lock();
@@ -187,12 +187,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			}
 		}
 
-		Timestamp ts = mem.index(message);
-		Integer sensorType = ((Number) message.get("sensorType")).intValue();
-		Long value = ((Number) message.get("value")).longValue();
+		mem.index(message);
 		// mise en queue pour la persistence
-		Message mes = new Message(id, ts.getTimestamp(), sensorType, value, ts.getId());
-		queue.put(mes);
+		queue.put(message);
 	}
 
 	protected boolean containsId(String id) {
