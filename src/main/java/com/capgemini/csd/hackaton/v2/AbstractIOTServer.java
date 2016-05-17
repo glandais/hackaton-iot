@@ -161,7 +161,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			LOGGER.error("", e);
 			throw new Exception(e);
 		}
-		//		LOGGER.info(uri + " " + params + " " + message + " -> " + result);
+		// LOGGER.info(uri + " " + params + " " + message + " -> " + result);
 		return result;
 	}
 

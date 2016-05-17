@@ -6,23 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.search.CollectorManager;
 
 import com.capgemini.csd.hackaton.client.Summary;
 
 public class SummaryCollectorManager implements CollectorManager<SummaryCollector, Map<Integer, Summary>> {
 
-	private DirectoryReader ireader;
-
-	public SummaryCollectorManager(DirectoryReader ireader) {
-		super();
-		this.ireader = ireader;
-	}
-
 	@Override
 	public SummaryCollector newCollector() throws IOException {
-		return new SummaryCollector(ireader);
+		return new SummaryCollector();
 	}
 
 	@Override
