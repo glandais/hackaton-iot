@@ -135,7 +135,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
-				result = "OK";
+				result = "";
 			} else if (uri.startsWith("/messages/synthesis")) {
 				Collection<String> ts = params.get("timestamp");
 				long timestamp = 0;
@@ -161,6 +161,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			LOGGER.error("", e);
 			throw new Exception(e);
 		}
+		//		LOGGER.info(uri + " " + params + " " + message + " -> " + result);
 		return result;
 	}
 
@@ -199,6 +200,11 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		indexLock.readLock().lock();
 		try {
 			Map<Integer, Summary> summarry = new TreeMap<>(getSummary(timestamp, duration));
+			for (int i = 1; i < 11; i++) {
+				if (!summarry.containsKey(i)) {
+					summarry.put(i, new Summary(i, 1, 0, 0, 0));
+				}
+			}
 			List<Summary> syntheses = new ArrayList<>(summarry.values());
 			String syntheseMaps = "[" + syntheses.stream().map(s -> s.toString()).collect(Collectors.joining(","))
 					+ "]";
