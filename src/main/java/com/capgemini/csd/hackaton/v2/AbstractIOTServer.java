@@ -22,7 +22,6 @@ import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.Util;
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.server.Server;
-import com.capgemini.csd.hackaton.server.ServerNetty;
 import com.capgemini.csd.hackaton.server.ServerUndertow;
 import com.capgemini.csd.hackaton.v2.mem.Mem;
 import com.capgemini.csd.hackaton.v2.message.Message;
@@ -38,7 +37,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public static final boolean TEST_ID = false;
 
-	public static int CACHE_SIZE = 999;
+	public static int CACHE_SIZE = 9999999;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
@@ -137,7 +136,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			if (uri.equals("/messages")) {
 				process(message);
 				result = "OK";
-			} else if (uri.startsWith("/messages/synthesis?")) {
+			} else if (uri.startsWith("/messages/synthesis")) {
 				Collection<String> ts = params.get("timestamp");
 				long timestamp = 0;
 				if (ts == null) {

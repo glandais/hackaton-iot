@@ -45,11 +45,11 @@ public class Warmer {
 		Calendar start = Calendar.getInstance();
 		start.add(Calendar.HOUR_OF_DAY, -1);
 		LOGGER.info("Demande de synthèse");
-		client.getSynthese(start.getTimeInMillis(), 3600 * 2);
+		client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
 		LOGGER.info("Attente fin indexation");
 		awaitWarmupTermination(abstractIOTServer);
 		LOGGER.info("Demande de synthèse");
-		client.getSynthese(start.getTimeInMillis(), 3600 * 2);
+		client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
 
 		LOGGER.info("Fermeture");
 		client.shutdown();
