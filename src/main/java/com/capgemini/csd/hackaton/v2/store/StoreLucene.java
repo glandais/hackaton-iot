@@ -2,11 +2,8 @@ package com.capgemini.csd.hackaton.v2.store;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,9 +37,7 @@ import com.capgemini.csd.hackaton.v2.store.lucene.SummaryCollectorManager;
 
 public class StoreLucene implements com.capgemini.csd.hackaton.v2.store.Store {
 
-	private static final Set<String> FIELDS = new HashSet<>(Arrays.asList("sensorType", "value"));
-
-	private static final ExecutorService executor = Executors
+	private static final ExecutorService QUERY_EXECUTOR = Executors
 			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	public static final FieldType TYPE_LONG = new FieldType();
@@ -94,7 +89,7 @@ public class StoreLucene implements com.capgemini.csd.hackaton.v2.store.Store {
 			SearcherFactory sf = new SearcherFactory() {
 				@Override
 				public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
-					return new IndexSearcher(reader, executor);
+					return new IndexSearcher(reader, QUERY_EXECUTOR);
 				}
 			};
 			searcherManager = new SearcherManager(iwriter, sf);
