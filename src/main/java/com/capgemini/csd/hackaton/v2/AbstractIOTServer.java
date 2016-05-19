@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -41,7 +42,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
-	private static final int BATCH_SIZE = 1000;
+	private static final int BATCH_SIZE = 1001;
+
+	public static final AtomicLong LAST_QUERY = new AtomicLong();
 
 	@Option(type = OptionType.GLOBAL, name = { "--port", "-p" }, description = "Port")
 	protected int port = 80;
@@ -73,6 +76,10 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public int getPort() {
 		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 	public String getDossier() {
@@ -123,7 +130,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		store.init(dossier);
 
 		// enregistrement des messages non enregistrés
-		index();
+		index(false);
 
 		startPersister();
 	}
@@ -132,6 +139,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	public String processRequest(String uri, Map<String, ? extends Collection<String>> params, String message)
 			throws Exception {
 		String result = "";
+		LAST_QUERY.set(System.currentTimeMillis());
 		try {
 			if (uri.equals("/messages")) {
 				process(message);
@@ -155,7 +163,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 				}
 				result = getSynthese(timestamp, duration);
 			} else if (uri.equals("/index")) {
-				index();
+				index(false);
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("", e);
@@ -237,8 +245,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		Thread thread = new Thread(() -> {
 			while (true) {
 				if (mem.getSize() > CACHE_SIZE) {
-					index();
-					Sys.sleep(1L);
+					index(true);
+				} else if (System.currentTimeMillis() - LAST_QUERY.get() > SLEEP_PERSISTER) {
+					index(true);
 				} else {
 					Sys.sleep(SLEEP_PERSISTER);
 				}
@@ -249,7 +258,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		thread.start();
 	}
 
-	private void index() {
+	private void index(boolean unSeulLot) {
 		List<Message> messages = new ArrayList<>(BATCH_SIZE + 1);
 
 		Message message = queue.readMessage();
@@ -258,6 +267,9 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 			if (messages.size() == BATCH_SIZE) {
 				indexMessages(messages);
 				messages = new ArrayList<>(BATCH_SIZE + 1);
+				if (unSeulLot) {
+					break;
+				}
 			}
 			message = queue.readMessage();
 		}

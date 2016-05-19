@@ -25,15 +25,16 @@ public class Warmer {
 		AbstractIOTServer.CACHE_SIZE = WARMUP_COUNT - 100;
 
 		String dossierBackup = abstractIOTServer.getDossier();
+		int portBackup = abstractIOTServer.getPort();
 		abstractIOTServer.setDossier(getTmpDossier());
+		abstractIOTServer.setPort(8080);
 		abstractIOTServer.startServer(false);
 
 		Client client = new ClientAsyncHTTP();
+		client.razMessages();
 		client.setHostPort("127.0.0.1", abstractIOTServer.getPort());
 		LOGGER.info("Envoi de " + (WARMUP_COUNT / 2) + " messages en HTTP");
-		for (int i = 0; i < WARMUP_COUNT / 2; i++) {
-			client.sendMessage(true);
-		}
+		client.sendMessages(WARMUP_COUNT / 2, true);
 		LOGGER.info("Envoi de " + (WARMUP_COUNT / 2) + " messages en direct");
 		for (int i = 0; i < WARMUP_COUNT / 2; i++) {
 			try {
@@ -44,18 +45,23 @@ public class Warmer {
 		}
 		Calendar start = Calendar.getInstance();
 		start.add(Calendar.HOUR_OF_DAY, -1);
-		LOGGER.info("Demande de synthèse");
-		client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
+		for (int i = 0; i < 100; i++) {
+			LOGGER.info("Demande de synthèse " + i);
+			client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
+		}
 		LOGGER.info("Attente fin indexation");
 		awaitWarmupTermination(abstractIOTServer);
-		LOGGER.info("Demande de synthèse");
-		client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
+		for (int i = 0; i < 100; i++) {
+			LOGGER.info("Demande de synthèse " + i);
+			client.getSyntheseDistante(start.getTimeInMillis(), 3600 * 2);
+		}
 
 		LOGGER.info("Fermeture");
 		client.shutdown();
 		abstractIOTServer.close();
 		FileUtils.deleteQuietly(new File(abstractIOTServer.getDossier()));
 		abstractIOTServer.setDossier(dossierBackup);
+		abstractIOTServer.setPort(portBackup);
 
 		AbstractIOTServer.CACHE_SIZE = cacheSize;
 		System.gc();
