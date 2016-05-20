@@ -72,9 +72,12 @@ public class StoreLucene implements com.capgemini.csd.hackaton.v2.store.Store {
 
 	private SearcherManager searcherManager;
 
-	public StoreLucene(double bufferSize) {
+	private boolean multiThread;
+
+	public StoreLucene(double bufferSize, boolean multiThread) {
 		super();
 		this.bufferSize = bufferSize;
+		this.multiThread = multiThread;
 	}
 
 	@Override
@@ -86,12 +89,24 @@ public class StoreLucene implements com.capgemini.csd.hackaton.v2.store.Store {
 			config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 			config.setRAMBufferSizeMB(bufferSize);
 			iwriter = new IndexWriter(cachedFSDir, config);
-			SearcherFactory sf = new SearcherFactory() {
-				@Override
-				public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
-					return new IndexSearcher(reader, QUERY_EXECUTOR);
-				}
-			};
+			SearcherFactory sf;
+			if (multiThread) {
+				sf = new SearcherFactory() {
+					@Override
+					public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader)
+							throws IOException {
+						return new IndexSearcher(reader, QUERY_EXECUTOR);
+					}
+				};
+			} else {
+				sf = new SearcherFactory() {
+					@Override
+					public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader)
+							throws IOException {
+						return new IndexSearcher(reader);
+					}
+				};
+			}
 			searcherManager = new SearcherManager(iwriter, sf);
 		} catch (IOException e) {
 			throw new IllegalStateException("", e);

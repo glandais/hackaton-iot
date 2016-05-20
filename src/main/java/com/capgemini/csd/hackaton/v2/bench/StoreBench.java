@@ -60,7 +60,7 @@ public class StoreBench implements Runnable {
 	@Override
 	public void run() {
 		if (lucene) {
-			bench(new StoreLucene(512));
+			bench(new StoreLucene(512, true));
 		}
 		if (noop) {
 			bench(new StoreNoop());

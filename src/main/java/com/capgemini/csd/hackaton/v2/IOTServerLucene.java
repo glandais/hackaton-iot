@@ -24,7 +24,7 @@ public class IOTServerLucene extends AbstractIOTServer {
 
 	@Override
 	protected Store getStore() {
-		return new StoreLucene(512);
+		return new StoreLucene(512, false);
 	}
 
 }

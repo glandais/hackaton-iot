@@ -38,7 +38,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public static final boolean TEST_ID = false;
 
-	public static int CACHE_SIZE = 9999999;
+	public static int CACHE_SIZE = 500000;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
@@ -244,9 +244,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	private void startPersister() {
 		Thread thread = new Thread(() -> {
 			while (true) {
-				if (mem.getSize() > CACHE_SIZE) {
-					index(true);
-				} else if (System.currentTimeMillis() - LAST_QUERY.get() > SLEEP_PERSISTER) {
+				if (mem.getSize() > CACHE_SIZE || System.currentTimeMillis() - LAST_QUERY.get() > SLEEP_PERSISTER) {
 					index(true);
 				} else {
 					Sys.sleep(SLEEP_PERSISTER);
