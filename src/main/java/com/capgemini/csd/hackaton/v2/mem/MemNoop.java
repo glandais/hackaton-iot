@@ -32,11 +32,6 @@ public class MemNoop implements Mem {
 	}
 
 	@Override
-	public long getSize() {
-		return 0;
-	}
-
-	@Override
 	public void close() {
 	}
 }

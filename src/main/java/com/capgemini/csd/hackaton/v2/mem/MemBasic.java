@@ -96,10 +96,6 @@ public class MemBasic implements Mem {
 		return read(() -> Util.getSummary(memoryMap, timestamp, duration));
 	}
 
-	public long getSize() {
-		return read(() -> memoryMap.size());
-	}
-
 	@Override
 	public void close() {
 		memoryMap.clear();

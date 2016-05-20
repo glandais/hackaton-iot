@@ -62,4 +62,9 @@ public class QueueSpiderPig implements Queue {
 		}
 	}
 
+	@Override
+	public long getSize() {
+		return queue.size();
+	}
+
 }

@@ -69,7 +69,7 @@ public class Warmer {
 	}
 
 	protected static void awaitWarmupTermination(AbstractIOTServer abstractIOTServer) {
-		while (abstractIOTServer.getMemSize() != 0) {
+		while (abstractIOTServer.getQueueSize() != 0) {
 			try {
 				Thread.sleep(10L);
 			} catch (InterruptedException e) {

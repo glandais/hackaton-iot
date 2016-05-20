@@ -4,11 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,9 +38,19 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(AbstractIOTServer.class);
 
+	private static final ExecutorService INDEX_EXECUTOR = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), r -> {
+				Thread thread = new Thread(r);
+				thread.setPriority(Thread.MIN_PRIORITY);
+				return thread;
+			});
+
+	private static final ExecutorService SUMMARY_EXECUTOR = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 	public static final boolean TEST_ID = false;
 
-	public static int CACHE_SIZE = 500000;
+	public static int CACHE_SIZE = 1500000;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
@@ -205,46 +217,46 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	protected String getSynthese(long timestamp, int duration) {
+		Map<Integer, Summary> summary = new TreeMap<>();
 		indexLock.readLock().lock();
 		try {
-			Map<Integer, Summary> summarry = new TreeMap<>(getSummary(timestamp, duration));
-			for (int i = 1; i < 11; i++) {
-				if (!summarry.containsKey(i)) {
-					summarry.put(i, new Summary(i, 1, 0, 0, 0));
-				}
-			}
-			List<Summary> syntheses = new ArrayList<>(summarry.values());
-			String syntheseMaps = "[" + syntheses.stream().map(s -> s.toString()).collect(Collectors.joining(","))
-					+ "]";
-			return syntheseMaps;
+			Future<Map<Integer, Summary>> storeFuture = SUMMARY_EXECUTOR
+					.submit(() -> store.getSummary(timestamp, duration));
+			Future<Map<Integer, Summary>> memFuture = SUMMARY_EXECUTOR
+					.submit(() -> mem.getSummary(timestamp, duration));
+			merge(summary, storeFuture.get());
+			merge(summary, memFuture.get());
+		} catch (Exception e) {
+			LOGGER.error("", e);
 		} finally {
 			indexLock.readLock().unlock();
 		}
+		for (int i = 1; i < 11; i++) {
+			if (!summary.containsKey(i)) {
+				summary.put(i, new Summary(i, 1, 0, 0, 0));
+			}
+		}
+		List<Summary> syntheses = new ArrayList<>(summary.values());
+		String syntheseMaps = "[" + syntheses.stream().map(s -> s.toString()).collect(Collectors.joining(",")) + "]";
+		return syntheseMaps;
 	}
 
-	protected Map<Integer, Summary> getSummary(long timestamp, Integer duration) {
-		Map<Integer, Summary> storeSummary = store.getSummary(timestamp, duration);
-		Map<Integer, Summary> memSummary = mem.getSummary(timestamp, duration);
-		Map<Integer, Summary> summary = new HashMap<Integer, Summary>();
-
-		for (Entry<Integer, Summary> entry : storeSummary.entrySet()) {
-			if (memSummary.containsKey(entry.getKey())) {
-				entry.getValue().combine(memSummary.get(entry.getKey()));
-			}
-			summary.put(entry.getKey(), entry.getValue());
-		}
-		for (Entry<Integer, Summary> entry : memSummary.entrySet()) {
-			if (!storeSummary.containsKey(entry.getKey())) {
+	protected void merge(Map<Integer, Summary> summary, Map<Integer, Summary> otherSummary) {
+		for (Entry<Integer, Summary> entry : otherSummary.entrySet()) {
+			Summary exist = summary.get(entry.getKey());
+			if (exist != null) {
+				exist.combine(entry.getValue());
+			} else {
 				summary.put(entry.getKey(), entry.getValue());
 			}
 		}
-		return summary;
 	}
 
 	private void startPersister() {
 		Thread thread = new Thread(() -> {
 			while (true) {
-				if (mem.getSize() > CACHE_SIZE || System.currentTimeMillis() - LAST_QUERY.get() > SLEEP_PERSISTER) {
+				if (queue.getSize() > CACHE_SIZE
+						|| (System.currentTimeMillis() - LAST_QUERY.get() > SLEEP_PERSISTER && queue.getSize() > 0)) {
 					index(true);
 				} else {
 					Sys.sleep(SLEEP_PERSISTER);
@@ -280,14 +292,20 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		LOGGER.info("Indexing " + messages.size() + " messages");
 		indexLock.writeLock().lock();
 		try {
-			store.indexMessages(messages);
-			mem.removeMessages(messages);
+			Future<?> storeFuture = INDEX_EXECUTOR.submit(() -> store.indexMessages(messages));
+			Future<?> memFuture = INDEX_EXECUTOR.submit(() -> mem.removeMessages(messages));
+			try {
+				memFuture.get();
+				storeFuture.get();
+			} catch (Exception e) {
+				LOGGER.error("erreur", e);
+			}
 		} finally {
 			indexLock.writeLock().unlock();
 		}
 	}
 
-	public long getMemSize() {
-		return mem.getSize();
+	public long getQueueSize() {
+		return queue.getSize();
 	}
 }

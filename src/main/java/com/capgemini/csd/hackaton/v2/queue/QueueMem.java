@@ -26,4 +26,9 @@ public class QueueMem implements Queue {
 	public void close() {
 	}
 
+	@Override
+	public long getSize() {
+		return list.size();
+	}
+
 }

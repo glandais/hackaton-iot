@@ -12,4 +12,6 @@ public interface Queue {
 
 	void close();
 
+	long getSize();
+
 }
