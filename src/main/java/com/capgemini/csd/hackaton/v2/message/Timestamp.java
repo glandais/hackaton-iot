@@ -1,7 +1,5 @@
 package com.capgemini.csd.hackaton.v2.message;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Timestamp implements Comparable<Timestamp> {
 
 	private long timestamp;

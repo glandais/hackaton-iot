@@ -50,7 +50,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 
 	public static final boolean TEST_ID = false;
 
-	public static int CACHE_SIZE = 1500000;
+	public static int CACHE_SIZE = 1000000;
 
 	private static final long SLEEP_PERSISTER = 5000L;
 
@@ -289,7 +289,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	private void indexMessages(List<Message> messages) {
-		LOGGER.info("Indexing " + messages.size() + " messages");
+		//		LOGGER.info("Indexing " + messages.size() + " messages");
 		indexLock.writeLock().lock();
 		try {
 			Future<?> storeFuture = INDEX_EXECUTOR.submit(() -> store.indexMessages(messages));

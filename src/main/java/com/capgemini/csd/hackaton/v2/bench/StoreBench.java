@@ -17,6 +17,7 @@ import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.message.Message;
 import com.capgemini.csd.hackaton.v2.store.Store;
 import com.capgemini.csd.hackaton.v2.store.StoreLucene;
+import com.capgemini.csd.hackaton.v2.store.StoreMapDB;
 import com.capgemini.csd.hackaton.v2.store.StoreNoop;
 import com.capgemini.csd.hackaton.v2.store.StoreObjectDB;
 import com.google.common.base.Stopwatch;
@@ -49,16 +50,23 @@ public class StoreBench implements Runnable {
 	@Option(type = OptionType.GLOBAL, name = { "-lucene" }, description = "Lucene")
 	protected boolean lucene = false;
 
+	@Option(type = OptionType.GLOBAL, name = { "-mapDB" }, description = "MapDB")
+	protected boolean mapDB = false;
+
 	public static void main(String[] args) {
 		StoreBench storeBench = new StoreBench();
 		//		storeBench.noop = true;
-		storeBench.odb = true;
+		//		storeBench.odb = true;
+		//		storeBench.mapDB = true;
 		storeBench.lucene = true;
 		storeBench.run();
 	}
 
 	@Override
 	public void run() {
+		if (mapDB) {
+			bench(new StoreMapDB());
+		}
 		if (lucene) {
 			bench(new StoreLucene(512, true));
 		}
@@ -101,10 +109,10 @@ public class StoreBench implements Runnable {
 				stopwatch.start();
 			}
 			if (!store.containsId(ids.get(R.nextInt(ids.size())))) {
-				LOGGER.error("False negative");
+				//				LOGGER.error("False negative");
 			}
 			if (store.containsId(UUID.randomUUID().toString())) {
-				LOGGER.error("False positive");
+				//				LOGGER.error("False positive");
 			}
 		}
 		stopwatch.stop();
