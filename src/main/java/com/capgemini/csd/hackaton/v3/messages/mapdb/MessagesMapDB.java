@@ -1,8 +1,6 @@
 package com.capgemini.csd.hackaton.v3.messages.mapdb;
 
 import java.io.File;
-import java.util.Map;
-import java.util.NavigableMap;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -14,6 +12,8 @@ import com.capgemini.csd.hackaton.beans.mapdb.SerializerTimestamp;
 import com.capgemini.csd.hackaton.beans.mapdb.SerializerValue;
 import com.capgemini.csd.hackaton.v3.Messages;
 import com.capgemini.csd.hackaton.v3.messages.AbstractMessages;
+import com.capgemini.csd.hackaton.v3.messages.Message;
+import com.capgemini.csd.hackaton.v3.summaries.Summaries;
 
 public class MessagesMapDB extends AbstractMessages implements Messages {
 
@@ -26,16 +26,21 @@ public class MessagesMapDB extends AbstractMessages implements Messages {
 	}
 
 	@Override
-	protected NavigableMap<Timestamp, Value> getMap() {
-		return map;
+	public void add(Message message) {
+		add(message, map);
+	}
+
+	@Override
+	public Summaries getSummaries(long from, long to) {
+		return getSummaries(from, to, map);
 	}
 
 	public void close() {
 		db.close();
 	}
 
-	public void putAll(Map<Timestamp, Value> map2) {
-		map.putAll(map2);
+	public void put(Timestamp ts, Value value) {
+		map.put(ts, value);
 	}
 
 }

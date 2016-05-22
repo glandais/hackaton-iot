@@ -82,7 +82,7 @@ public class ExecutionServer extends Commande implements Controler {
 		// thread.start();
 
 		LOGGER.info("Démarrage du serveur");
-		server.start(this, getPort());
+		startServer(false);
 		LOGGER.info("Serveur démarré");
 
 		// warmup();
@@ -177,6 +177,21 @@ public class ExecutionServer extends Commande implements Controler {
 	@Override
 	public boolean isServer() {
 		return true;
+	}
+
+	@Override
+	public void setPort(int i) {
+		this.port = port;
+	}
+
+	@Override
+	public void startServer(boolean b) {
+		server.start(this, getPort());
+	}
+
+	@Override
+	public long getQueueSize() {
+		return 0;
 	}
 
 }

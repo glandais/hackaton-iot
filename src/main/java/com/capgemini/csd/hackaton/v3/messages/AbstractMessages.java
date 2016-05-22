@@ -12,47 +12,43 @@ import java.util.stream.Stream;
 
 import com.capgemini.csd.hackaton.beans.Timestamp;
 import com.capgemini.csd.hackaton.beans.Value;
-import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.v3.Messages;
 import com.capgemini.csd.hackaton.v3.summaries.Summaries;
+import com.capgemini.csd.hackaton.v3.summaries.Summary;
 
 public abstract class AbstractMessages implements Messages {
 
 	private final ReentrantLock lock = new ReentrantLock();
 
-	protected abstract NavigableMap<Timestamp, Value> getMap();
-
-	@Override
-	public void add(Message message) {
+	protected void add(Message message, NavigableMap<Timestamp, Value> map) {
 		Timestamp ts = new Timestamp(message.getTimestamp(), message.getIdTs());
 		Value val = new Value(message.getSensorType(), message.getValue());
 
 		lock.lock();
 		try {
-			getMap().put(ts, val);
+			map.put(ts, val);
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	@Override
-	public Summaries getSummaries(long from, long to) {
+	protected Summaries getSummaries(long from, long to, NavigableMap<Timestamp, Value> map) {
 		Timestamp fromTs = new Timestamp(from, 0);
 		Timestamp toTs = new Timestamp(to, Integer.MAX_VALUE);
 
 		lock.lock();
-		Map<Integer, Summary> map;
+		Map<Integer, Summary> result;
 		try {
-			Stream<Value> stream = getMap().subMap(fromTs, toTs).values().stream();
-			map = stream.collect(groupingBy(Value::getSensorId,
+			Stream<Value> stream = map.subMap(fromTs, toTs).values().stream();
+			result = stream.collect(groupingBy(Value::getSensorId,
 					mapping(Value::getValue, Collector.of(Summary::new, Summary::accept, Summary::combine2))));
 		} finally {
 			lock.unlock();
 		}
-		for (Entry<Integer, Summary> entry : map.entrySet()) {
+		for (Entry<Integer, Summary> entry : result.entrySet()) {
 			entry.getValue().setSensorType(entry.getKey());
 		}
-		return new Summaries(map);
+		return new Summaries(result);
 	}
 
 }

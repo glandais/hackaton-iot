@@ -16,4 +16,12 @@ public interface Controler {
 
 	void close();
 
+	int getPort();
+
+	void setPort(int i);
+
+	void startServer(boolean b);
+
+	long getQueueSize();
+
 }

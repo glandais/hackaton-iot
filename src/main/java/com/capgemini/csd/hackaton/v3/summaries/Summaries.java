@@ -1,12 +1,13 @@
 package com.capgemini.csd.hackaton.v3.summaries;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import com.capgemini.csd.hackaton.client.Summary;
+public class Summaries implements Serializable {
 
-public class Summaries {
+	private static final long serialVersionUID = 4688043972119008161L;
 
 	private TreeMap<Integer, Summary> summaries = new TreeMap<>();
 
@@ -19,7 +20,7 @@ public class Summaries {
 		summaries.putAll(map);
 	}
 
-	public synchronized Summary get(Object key) {
+	public synchronized Summary get(int key) {
 		Summary summary = summaries.get(key);
 		if (summary == null) {
 			summary = new Summary((int) key);
@@ -40,7 +41,7 @@ public class Summaries {
 			if (summaries.containsKey(key)) {
 				summaries.get(key).combine(value);
 			} else {
-				summaries.put(key, value);
+				summaries.put(key, new Summary(value));
 			}
 		}
 	}

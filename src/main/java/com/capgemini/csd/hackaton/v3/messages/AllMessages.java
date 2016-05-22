@@ -2,13 +2,18 @@ package com.capgemini.csd.hackaton.v3.messages;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.boon.collections.ConcurrentHashSet;
 import org.boon.core.Sys;
 
+import com.capgemini.csd.hackaton.beans.Timestamp;
+import com.capgemini.csd.hackaton.beans.Value;
 import com.capgemini.csd.hackaton.v3.Messages;
 import com.capgemini.csd.hackaton.v3.messages.mapdb.MessagesMapDB;
 import com.capgemini.csd.hackaton.v3.messages.mem.MessagesMem;
@@ -22,11 +27,13 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 
 	private String dossier;
 
+	protected ExecutorService excutor = Executors.newSingleThreadExecutor();
+
 	protected Map<Long, Messages> reading = new ConcurrentHashMap<>();
 
 	protected Map<Long, Messages> writing = new ConcurrentHashMap<>();
 
-	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS)
+	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS)
 			.removalListener(this).build(this);
 
 	private Set<Long> writeLock = new ConcurrentHashSet<>();
@@ -57,12 +64,17 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 	public void onRemoval(RemovalNotification<Long, Messages> notification) {
 		Long sec = notification.getKey();
 		if (notification.getValue() instanceof MessagesMem) {
-			writeLock.add(sec);
-			MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(sec));
-			messagesMapDB.putAll(((MessagesMem) notification.getValue()).getMap());
-			reading.put(sec, messagesMapDB);
-			writing.put(sec, messagesMapDB);
-			writeLock.remove(sec);
+			excutor.submit(() -> {
+				writeLock.add(sec);
+				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(sec));
+				Iterable<Entry<Timestamp, Value>> values = ((MessagesMem) notification.getValue()).getValues();
+				for (Entry<Timestamp, Value> entry : values) {
+					messagesMapDB.put(entry.getKey(), entry.getValue());
+				}
+				reading.put(sec, messagesMapDB);
+				writing.put(sec, messagesMapDB);
+				writeLock.remove(sec);
+			});
 		} else if (notification.getValue() instanceof MessagesMapDB) {
 			reading.remove(sec);
 			writing.remove(sec);

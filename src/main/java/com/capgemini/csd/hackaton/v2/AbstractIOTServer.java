@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.Util;
+import com.capgemini.csd.hackaton.Warmer;
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerUndertow;
@@ -190,9 +191,15 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 		if (server != null) {
 			server.close();
 		}
-		mem.close();
-		queue.close();
-		store.close();
+		if (mem != null) {
+			mem.close();
+		}
+		if (queue != null) {
+			queue.close();
+		}
+		if (store != null) {
+			store.close();
+		}
 	}
 
 	protected void process(String json) {
@@ -289,7 +296,7 @@ public abstract class AbstractIOTServer implements Runnable, Controler {
 	}
 
 	private void indexMessages(List<Message> messages) {
-		//		LOGGER.info("Indexing " + messages.size() + " messages");
+		// LOGGER.info("Indexing " + messages.size() + " messages");
 		indexLock.writeLock().lock();
 		try {
 			Future<?> storeFuture = INDEX_EXECUTOR.submit(() -> store.indexMessages(messages));

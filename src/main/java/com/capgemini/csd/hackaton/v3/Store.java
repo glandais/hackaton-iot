@@ -1,5 +1,8 @@
 package com.capgemini.csd.hackaton.v3;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.capgemini.csd.hackaton.v3.messages.AllMessages;
 import com.capgemini.csd.hackaton.v3.messages.Message;
 import com.capgemini.csd.hackaton.v3.summaries.AllSummaries;
@@ -7,23 +10,25 @@ import com.capgemini.csd.hackaton.v3.summaries.Summaries;
 
 public class Store {
 
+	public final static Logger LOGGER = LoggerFactory.getLogger(Store.class);
+
 	private AllSummaries allSummaries = new AllSummaries();
 
-	private AllMessages allMessages;
+	private AllMessages allMessages = new AllMessages();
 
 	public Store() {
 		super();
-		this.allMessages = new AllMessages();
 	}
 
 	public void init(String dossier) {
 		allMessages.init(dossier);
+		allSummaries.init(dossier);
 	}
 
 	public void process(Message message) {
-		long sec = message.getTimestamp() / 1000;
-		allSummaries.get(sec).get(message.getSensorType()).accept(message.getValue());
-		allMessages.getForWrite(sec).add(message);
+		long secondes = message.getSecondes();
+		allMessages.getForWrite(secondes).add(message);
+		allSummaries.get(secondes).get(message.getSensorType()).accept(message.getValue());
 	}
 
 	public Summaries getSynthese(long from, long to) {

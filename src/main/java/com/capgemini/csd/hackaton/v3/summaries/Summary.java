@@ -23,6 +23,10 @@ public class Summary implements Serializable {
 		this.sensorType = sensorType;
 	}
 
+	public Summary(Summary summary) {
+		this(summary.sensorType, summary.count, summary.total, summary.min, summary.max);
+	}
+
 	public Summary(int sensorType, Number count, Number total, Number min, Number max) {
 		this.sensorType = sensorType;
 		this.min = min.longValue();
@@ -48,7 +52,7 @@ public class Summary implements Serializable {
 	}
 
 	public BigDecimal getAverage() {
-		return total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
+		return total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
 	}
 
 	public void setSensorType(int sensorType) {
@@ -101,9 +105,9 @@ public class Summary implements Serializable {
 
 	@Override
 	public String toString() {
-		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_DOWN);
+		BigDecimal average = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
 		return "{\"sensorType\":" + sensorType + ",\"minValue\":" + min + ",\"maxValue\":" + max + ",\"mediumValue\":"
-				+ average.toString() + "}";
+				+ average.toString() + ",\"count\":" + count + "}";
 	}
 
 }

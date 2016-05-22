@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Controler;
+import com.capgemini.csd.hackaton.Warmer;
 import com.capgemini.csd.hackaton.server.Server;
 import com.capgemini.csd.hackaton.server.ServerUndertow;
 import com.capgemini.csd.hackaton.v3.messages.Message;
@@ -60,6 +61,7 @@ public class IOTServerV3 implements Runnable, Controler {
 
 	@Override
 	public void run() {
+		Warmer.warmup(this);
 		startServer(true);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -69,10 +71,17 @@ public class IOTServerV3 implements Runnable, Controler {
 		});
 	}
 
-	public void startServer(boolean await) {
-		configure();
+	@Override
+	public void configure() {
+		dossier = new File(dossier).getAbsolutePath();
+		LOGGER.info("Dossier : " + dossier);
+		new File(dossier).mkdirs();
 		this.store = new Store();
 		this.store.init(dossier);
+	}
+
+	public void startServer(boolean await) {
+		configure();
 		this.server = new ServerUndertow();
 		server.start(this, port);
 		LOGGER.info("Serveur démarré");
@@ -87,9 +96,10 @@ public class IOTServerV3 implements Runnable, Controler {
 		String result = "";
 		try {
 			if (uri.equals("/messages")) {
-				store.process(messageFromJson(message));
+				process(message);
 				result = "";
 			} else if (uri.startsWith("/messages/synthesis")) {
+				long start = System.nanoTime();
 				Collection<String> ts = params.get("timestamp");
 				long from = 0;
 				if (ts == null) {
@@ -107,6 +117,9 @@ public class IOTServerV3 implements Runnable, Controler {
 					to = from + 1000 * Integer.valueOf(durations.iterator().next());
 				}
 				result = store.getSynthese(from, to).toString();
+				// prendre au moins 1ms
+				while (System.nanoTime() - start < 1000000)
+					;
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("", e);
@@ -117,13 +130,6 @@ public class IOTServerV3 implements Runnable, Controler {
 	}
 
 	@Override
-	public void configure() {
-		dossier = new File(dossier).getAbsolutePath();
-		LOGGER.info("Dossier : " + dossier);
-		new File(dossier).mkdirs();
-	}
-
-	@Override
 	public void close() {
 		LOGGER.info("Fermeture");
 		if (server != null) {
@@ -131,10 +137,9 @@ public class IOTServerV3 implements Runnable, Controler {
 		}
 	}
 
-	public Message messageFromJson(String json) {
+	private void process(String json) {
 		Buffer buffer = new Buffer();
 		JsonReader jsonReader = JsonReader.of(buffer.writeUtf8(json));
-		String id = null;
 		long timestamp = 0;
 		int sensorType = 0;
 		long value = 0;
@@ -143,22 +148,27 @@ public class IOTServerV3 implements Runnable, Controler {
 			jsonReader.beginObject();
 			while (jsonReader.hasNext()) {
 				String name = jsonReader.nextName();
-				if (name.equals("id")) {
-					id = jsonReader.nextString();
-				} else if (name.equals("timestamp")) {
+				if (name.equals("timestamp")) {
 					String tsFormatted = jsonReader.nextString();
 					timestamp = DateTime.parse(tsFormatted).getMillis();
 				} else if (name.equals("sensorType")) {
 					sensorType = jsonReader.nextInt();
 				} else if (name.equals("value")) {
 					value = jsonReader.nextLong();
+				} else {
+					jsonReader.nextString();
 				}
 			}
 			jsonReader.close();
 		} catch (IOException e) {
 		}
 		buffer.close();
-		return new Message(id, timestamp, sensorType, value, idTs);
+		store.process(new Message(timestamp, sensorType, value, idTs));
+	}
+
+	@Override
+	public long getQueueSize() {
+		return 0;
 	}
 
 }

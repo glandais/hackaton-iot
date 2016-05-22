@@ -8,8 +8,6 @@ public class Message implements Serializable {
 
 	private static final long serialVersionUID = -7027323607067414084L;
 
-	private String id;
-
 	private long timestamp;
 
 	private int idTs;
@@ -18,10 +16,12 @@ public class Message implements Serializable {
 
 	private long value;
 
-	public Message(String id, long timestamp, int sensorType, long value, int idTs) {
+	private long seconds;
+
+	public Message(long timestamp, int sensorType, long value, int idTs) {
 		super();
-		this.id = id;
 		this.timestamp = timestamp;
+		this.seconds = timestamp / 1000;
 		this.sensorType = sensorType;
 		this.value = value;
 		this.idTs = idTs;
@@ -31,16 +31,12 @@ public class Message implements Serializable {
 		super();
 	}
 
+	public long getSecondes() {
+		return seconds;
+	}
+
 	public Timestamp getTs() {
 		return new Timestamp(timestamp, idTs);
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	public long getTimestamp() {
@@ -49,6 +45,7 @@ public class Message implements Serializable {
 
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
+		this.seconds = timestamp / 1000;
 	}
 
 	public int getIdTs() {
@@ -77,8 +74,8 @@ public class Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Message [id=" + id + ", timestamp=" + timestamp + ", idTs=" + idTs + ", sensorType=" + sensorType
-				+ ", value=" + value + "]";
+		return "Message [timestamp=" + timestamp + ", idTs=" + idTs + ", sensorType=" + sensorType + ", value=" + value
+				+ "]";
 	}
 
 }

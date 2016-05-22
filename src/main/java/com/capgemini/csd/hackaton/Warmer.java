@@ -1,4 +1,4 @@
-package com.capgemini.csd.hackaton.v2;
+package com.capgemini.csd.hackaton;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.client.Client;
 import com.capgemini.csd.hackaton.client.ClientAsyncHTTP;
+import com.capgemini.csd.hackaton.v2.AbstractIOTServer;
 
 public class Warmer {
 
@@ -19,7 +20,7 @@ public class Warmer {
 
 	private static final int WARMUP_COUNT = 20000;
 
-	public static void warmup(AbstractIOTServer abstractIOTServer) {
+	public static void warmup(Controler abstractIOTServer) {
 		LOGGER.info("Warming");
 		int cacheSize = AbstractIOTServer.CACHE_SIZE;
 		AbstractIOTServer.CACHE_SIZE = WARMUP_COUNT - 100;
@@ -68,7 +69,7 @@ public class Warmer {
 		LOGGER.info("Warmed");
 	}
 
-	protected static void awaitWarmupTermination(AbstractIOTServer abstractIOTServer) {
+	protected static void awaitWarmupTermination(Controler abstractIOTServer) {
 		while (abstractIOTServer.getQueueSize() != 0) {
 			try {
 				Thread.sleep(10L);

@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 import com.capgemini.csd.hackaton.Controler;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.v2.IOTServerLucene;
+import com.capgemini.csd.hackaton.v2.IOTServerMapDB;
 import com.capgemini.csd.hackaton.v2.IOTServerMem;
 import com.capgemini.csd.hackaton.v2.IOTServerNoop;
 import com.capgemini.csd.hackaton.v2.IOTServerODB;
+import com.capgemini.csd.hackaton.v3.IOTServerV3;
 import com.google.common.base.Stopwatch;
 
 import io.airlift.airline.Command;
@@ -44,12 +46,20 @@ public class ControlerBench implements Runnable {
 	@Option(type = OptionType.GLOBAL, name = { "-odb" }, description = "ODB")
 	protected boolean odb = false;
 
+	@Option(type = OptionType.GLOBAL, name = { "-mapDB" }, description = "MapDB")
+	protected boolean mapDB = false;
+
+	@Option(type = OptionType.GLOBAL, name = { "-v3" }, description = "V3")
+	protected boolean v3 = false;
+
 	public static void main(String[] args) {
 		ControlerBench controlerBench = new ControlerBench();
-		controlerBench.noop = true;
-		controlerBench.mem = true;
-		controlerBench.lucene = true;
-		controlerBench.odb = true;
+		controlerBench.noop = false;
+		controlerBench.mapDB = false;
+		controlerBench.v3 = true;
+		controlerBench.mem = false;
+		controlerBench.lucene = false;
+		controlerBench.odb = false;
 		controlerBench.run();
 	}
 
@@ -64,8 +74,14 @@ public class ControlerBench implements Runnable {
 		if (mem) {
 			bench(new IOTServerMem());
 		}
+		if (mapDB) {
+			bench(new IOTServerMapDB());
+		}
 		if (odb) {
 			bench(new IOTServerODB());
+		}
+		if (v3) {
+			bench(new IOTServerV3());
 		}
 		System.exit(0);
 	}
@@ -100,14 +116,14 @@ public class ControlerBench implements Runnable {
 			}
 			if (i % MODULO_SYNTHESE == 0) {
 				try {
-					controler.processRequest("/messages/synthesis", Collections.emptyMap(), "");
+					controler.processRequest("/messages/synthesis?", Collections.emptyMap(), "");
 				} catch (Exception e) {
 					LOGGER.error("Erreur..........", e);
 				}
 			}
 		}
 		try {
-			LOGGER.info(controler.processRequest("/messages/synthesis", Collections.emptyMap(), ""));
+			LOGGER.info(controler.processRequest("/messages/synthesis?", Collections.emptyMap(), ""));
 		} catch (Exception e) {
 			LOGGER.error("Erreur..........", e);
 		}
