@@ -1,4 +1,4 @@
-package com.capgemini.csd.hackaton.v2.store.mapdb;
+package com.capgemini.csd.hackaton.beans.mapdb;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,7 +8,7 @@ import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
 import org.mapdb.serializer.GroupSerializer;
 
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
+import com.capgemini.csd.hackaton.beans.Timestamp;
 
 /**
  * Created by jan on 2/28/16.

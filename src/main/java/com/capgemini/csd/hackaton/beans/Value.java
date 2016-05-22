@@ -1,4 +1,4 @@
-package com.capgemini.csd.hackaton.v2.message;
+package com.capgemini.csd.hackaton.beans;
 
 public class Value {
 

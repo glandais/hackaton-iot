@@ -22,11 +22,11 @@ import java.util.stream.Stream;
 import org.boon.json.JsonFactory;
 import org.joda.time.DateTime;
 
+import com.capgemini.csd.hackaton.beans.Timestamp;
+import com.capgemini.csd.hackaton.beans.Value;
 import com.capgemini.csd.hackaton.client.AbstractClient;
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
-import com.capgemini.csd.hackaton.v2.message.Value;
 import com.squareup.moshi.JsonReader;
 
 import okio.Buffer;

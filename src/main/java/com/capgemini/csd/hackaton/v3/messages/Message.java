@@ -1,48 +1,21 @@
-package com.capgemini.csd.hackaton.v2.message;
+package com.capgemini.csd.hackaton.v3.messages;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.jdo.annotations.Index;
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Transient;
 
 import com.capgemini.csd.hackaton.beans.Timestamp;
 
-@Entity
-@NamedQueries({ @NamedQuery(name = "Message.exists", query = "SELECT COUNT(m.id) FROM Message m WHERE m.id = :id"),
-		@NamedQuery(name = "Message.summary", query = "SELECT m.sensorType, COUNT(m.id), SUM(m.value), MIN(m.value), MAX(m.value) FROM Message m "
-				+ "WHERE m.timestamp BETWEEN :start AND :end GROUP BY m.sensorType") })
 public class Message implements Serializable {
 
 	private static final long serialVersionUID = -7027323607067414084L;
 
-	@Id
-	@GeneratedValue
-	private Long realId;
-
-	@Basic
-	@Index(unique = "true")
 	private String id;
 
-	@Basic
-	@Index
 	private long timestamp;
 
-	@Transient
 	private int idTs;
 
-	@Basic
-	@Index
 	private int sensorType;
 
-	@Basic
 	private long value;
 
 	public Message(String id, long timestamp, int sensorType, long value, int idTs) {
@@ -60,14 +33,6 @@ public class Message implements Serializable {
 
 	public Timestamp getTs() {
 		return new Timestamp(timestamp, idTs);
-	}
-
-	public Long getRealId() {
-		return realId;
-	}
-
-	public void setRealId(Long realId) {
-		this.realId = realId;
 	}
 
 	public String getId() {
@@ -110,15 +75,10 @@ public class Message implements Serializable {
 		this.value = value;
 	}
 
-	public Map<String, Object> getMap() {
-		// FIXME
-		return Collections.emptyMap();
-	}
-
 	@Override
 	public String toString() {
-		return "Message [realId=" + realId + ", id=" + id + ", timestamp=" + timestamp + ", idTs=" + idTs
-				+ ", sensorType=" + sensorType + ", value=" + value + "]";
+		return "Message [id=" + id + ", timestamp=" + timestamp + ", idTs=" + idTs + ", sensorType=" + sensorType
+				+ ", value=" + value + "]";
 	}
 
 }

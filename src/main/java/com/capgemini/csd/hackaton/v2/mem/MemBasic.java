@@ -15,11 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.capgemini.csd.hackaton.Util;
+import com.capgemini.csd.hackaton.beans.Timestamp;
+import com.capgemini.csd.hackaton.beans.Value;
 import com.capgemini.csd.hackaton.client.Summary;
 import com.capgemini.csd.hackaton.v2.AbstractIOTServer;
 import com.capgemini.csd.hackaton.v2.message.Message;
-import com.capgemini.csd.hackaton.v2.message.Timestamp;
-import com.capgemini.csd.hackaton.v2.message.Value;
 
 import net.openhft.koloboke.collect.set.hash.HashObjSets;
 
