@@ -25,6 +25,11 @@ public class Store {
 		allSummaries.init(dossier);
 	}
 
+	public void close() {
+		allMessages.close();
+		allSummaries.close();
+	}
+
 	public void process(Message message) {
 		long secondes = message.getSecondes();
 		allMessages.getForWrite(secondes).add(message);

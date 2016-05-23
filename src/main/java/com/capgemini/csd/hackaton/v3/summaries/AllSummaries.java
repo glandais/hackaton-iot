@@ -1,15 +1,14 @@
 package com.capgemini.csd.hackaton.v3.summaries;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 
-import org.mapdb.elsa.ElsaMaker;
-import org.mapdb.elsa.SerializerPojo;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.HTreeMap;
+import org.mapdb.serializer.SerializerLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.v3.IOTServerV3;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -20,47 +19,32 @@ public class AllSummaries extends CacheLoader<Long, Summaries> implements Remova
 
 	public final static Logger LOGGER = LoggerFactory.getLogger(AllSummaries.class);
 
+	private DB db;
+
 	protected LoadingCache<Long, Summaries> summaries = CacheBuilder.newBuilder().maximumSize(86400)
 			.removalListener(this).build(this);
 
-	private String dossier;
+	private HTreeMap<Long, Summaries> map;
 
 	public void init(String dossier) {
-		this.dossier = dossier;
+		db = DBMaker.fileDB(new File(dossier, "summaries")).fileMmapEnable().concurrencyDisable().checksumHeaderBypass()
+				.make();
+		map = db.hashMap("summaries", new SerializerLong(), new SummariesSerializer()).createOrOpen();
 	}
 
-	private File getFile(Long sec) {
-		return new File(dossier, sec + ".summary");
+	public void close() {
+		db.close();
 	}
 
 	@Override
 	public void onRemoval(RemovalNotification<Long, Summaries> notification) {
-		SerializerPojo serializer = new ElsaMaker().make();
-		try {
-			RandomAccessFile fos = new RandomAccessFile(getFile(notification.getKey()), "rw");
-			serializer.serialize(fos, notification.getValue());
-			fos.close();
-		} catch (IOException e) {
-			LOGGER.error("Erreur", e);
-		}
+		map.put(notification.getKey(), notification.getValue());
 	}
 
 	@Override
 	public Summaries load(Long key) throws Exception {
-		File file = getFile(key);
-		if (file.exists()) {
-			SerializerPojo serializer = new ElsaMaker().make();
-			RandomAccessFile fos = null;
-			try {
-				fos = new RandomAccessFile(file, "r");
-				return (Summaries) serializer.deserialize(fos, -1);
-			} catch (IOException e) {
-				return new Summaries();
-			} finally {
-				if (fos != null) {
-					fos.close();
-				}
-			}
+		if (map.containsKey(key)) {
+			return map.get(key);
 		} else {
 			return new Summaries();
 		}

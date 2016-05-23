@@ -135,6 +135,9 @@ public class IOTServerV3 implements Runnable, Controler {
 		if (server != null) {
 			server.close();
 		}
+		if (store != null) {
+			store.close();
+		}
 	}
 
 	private void process(String json) {

@@ -27,13 +27,27 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 
 	private String dossier;
 
+	public static void main(String[] args) throws Exception {
+		AllMessages allMessages = new AllMessages();
+		Messages forRead = allMessages.getForRead(10);
+		System.out.println("got " + forRead);
+		Thread.sleep(2000);
+		for (int i = 0; i < 20; i++) {
+			allMessages.getForRead(i + 11);
+		}
+		Thread.sleep(50);
+		forRead = allMessages.getForWrite(10);
+		System.out.println("got " + forRead);
+		Thread.sleep(2000000);
+	}
+
 	protected ExecutorService excutor = Executors.newSingleThreadExecutor();
 
 	protected Map<Long, Messages> reading = new ConcurrentHashMap<>();
 
 	protected Map<Long, Messages> writing = new ConcurrentHashMap<>();
 
-	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS)
+	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterAccess(60, TimeUnit.SECONDS)
 			.removalListener(this).build(this);
 
 	private Set<Long> writeLock = new ConcurrentHashSet<>();
@@ -66,13 +80,14 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 		if (notification.getValue() instanceof MessagesMem) {
 			excutor.submit(() -> {
 				writeLock.add(sec);
+				writing.remove(sec);
 				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(sec));
 				Iterable<Entry<Timestamp, Value>> values = ((MessagesMem) notification.getValue()).getValues();
 				for (Entry<Timestamp, Value> entry : values) {
 					messagesMapDB.put(entry.getKey(), entry.getValue());
 				}
-				reading.put(sec, messagesMapDB);
-				writing.put(sec, messagesMapDB);
+				messagesMapDB.close();
+				reading.remove(sec);
 				writeLock.remove(sec);
 			});
 		} else if (notification.getValue() instanceof MessagesMapDB) {
@@ -99,6 +114,10 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 			return result;
 		}
 		return messages.getUnchecked(sec);
+	}
+
+	public void close() {
+		messages.invalidateAll();
 	}
 
 }

@@ -21,7 +21,7 @@ public class MessagesMapDB extends AbstractMessages implements Messages {
 	private DB db;
 
 	public MessagesMapDB(File file) {
-		db = DBMaker.fileDB(file).fileMmapEnable().concurrencyDisable().make();
+		db = DBMaker.fileDB(file).fileMmapEnable().concurrencyDisable().checksumHeaderBypass().make();
 		map = db.treeMap("messages", new SerializerTimestamp(), new SerializerValue()).createOrOpen();
 	}
 
