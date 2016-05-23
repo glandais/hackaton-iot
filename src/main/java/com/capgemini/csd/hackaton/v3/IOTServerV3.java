@@ -99,7 +99,7 @@ public class IOTServerV3 implements Runnable, Controler {
 				process(message);
 				result = "";
 			} else if (uri.startsWith("/messages/synthesis")) {
-				long start = System.nanoTime();
+				//				long start = System.nanoTime();
 				Collection<String> ts = params.get("timestamp");
 				long from = 0;
 				if (ts == null) {
@@ -118,8 +118,8 @@ public class IOTServerV3 implements Runnable, Controler {
 				}
 				result = store.getSynthese(from, to).toString();
 				// prendre au moins 1ms
-				while (System.nanoTime() - start < 1000000)
-					;
+				//				while (System.nanoTime() - start < 1000000)
+				//					;
 			}
 		} catch (RuntimeException e) {
 			LOGGER.error("", e);

@@ -1,10 +1,10 @@
 package com.capgemini.csd.hackaton.v3.messages;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +22,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+
+import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
 public class AllMessages extends CacheLoader<Long, Messages> implements RemovalListener<Long, Messages> {
 
@@ -43,11 +45,11 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 
 	protected ExecutorService excutor = Executors.newSingleThreadExecutor();
 
-	protected Map<Long, Messages> reading = new ConcurrentHashMap<>();
+	protected Map<Long, Messages> reading = Collections.synchronizedMap(HashLongObjMaps.newMutableMap());
 
-	protected Map<Long, Messages> writing = new ConcurrentHashMap<>();
+	protected Map<Long, Messages> writing = Collections.synchronizedMap(HashLongObjMaps.newMutableMap());
 
-	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterAccess(60, TimeUnit.SECONDS)
+	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterAccess(180, TimeUnit.SECONDS)
 			.removalListener(this).build(this);
 
 	private Set<Long> writeLock = new ConcurrentHashSet<>();
@@ -57,7 +59,7 @@ public class AllMessages extends CacheLoader<Long, Messages> implements RemovalL
 	}
 
 	private File getFile(Long sec) {
-		return new File(dossier, sec + "");
+		return new File(dossier, "" + sec);
 	}
 
 	@Override

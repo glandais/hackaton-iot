@@ -2,14 +2,15 @@ package com.capgemini.csd.hackaton.v3.summaries;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import net.openhft.koloboke.collect.map.hash.HashIntObjMaps;
 
 public class Summaries implements Serializable {
 
 	private static final long serialVersionUID = 4688043972119008161L;
 
-	private TreeMap<Integer, Summary> summaries = new TreeMap<>();
+	private Map<Integer, Summary> summaries = HashIntObjMaps.newMutableMap();
 
 	public Summaries() {
 		super();
@@ -24,8 +25,8 @@ public class Summaries implements Serializable {
 		Summary summary = summaries.get(key);
 		if (summary == null) {
 			summary = new Summary((int) key);
+			summaries.put((Integer) key, summary);
 		}
-		summaries.put((Integer) key, summary);
 		return summary;
 	}
 
