@@ -25,7 +25,8 @@ import com.google.common.cache.RemovalNotification;
 
 import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
-public class AllMessagesGuava extends CacheLoader<Long, Messages> implements RemovalListener<Long, Messages>, IAllMessages {
+public class AllMessagesGuava extends CacheLoader<Long, Messages>
+		implements RemovalListener<Long, Messages>, IAllMessages {
 
 	private String dossier;
 
@@ -53,7 +54,7 @@ public class AllMessagesGuava extends CacheLoader<Long, Messages> implements Rem
 		Messages result;
 		File file = getFile(sec);
 		if (file.exists()) {
-			result = new MessagesMapDB(file);
+			result = new MessagesMapDB(file, true);
 		} else {
 			result = new MessagesMem();
 		}
@@ -69,7 +70,7 @@ public class AllMessagesGuava extends CacheLoader<Long, Messages> implements Rem
 			excutor.submit(() -> {
 				writeLock.add(sec);
 				writing.remove(sec);
-				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(sec));
+				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(sec), false);
 				Iterable<Entry<Timestamp, Value>> values = ((MessagesMem) notification.getValue()).getValues();
 				for (Entry<Timestamp, Value> entry : values) {
 					messagesMapDB.put(entry.getKey(), entry.getValue());

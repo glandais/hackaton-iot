@@ -5,6 +5,7 @@ import java.io.File;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.DBMaker.Maker;
 
 import com.capgemini.csd.hackaton.beans.Timestamp;
 import com.capgemini.csd.hackaton.beans.Value;
@@ -20,8 +21,12 @@ public class MessagesMapDB extends AbstractMessages implements Messages {
 	private BTreeMap<Timestamp, Value> map;
 	private DB db;
 
-	public MessagesMapDB(File file) {
-		db = DBMaker.fileDB(file).fileMmapEnable().concurrencyDisable().checksumHeaderBypass().make();
+	public MessagesMapDB(File file, boolean transactional) {
+		Maker config = DBMaker.fileDB(file).fileMmapEnable().concurrencyDisable().checksumHeaderBypass();
+		if (transactional) {
+			config.transactionEnable();
+		}
+		db = config.make();
 		map = db.treeMap("messages", new SerializerTimestamp(), new SerializerValue()).createOrOpen();
 	}
 

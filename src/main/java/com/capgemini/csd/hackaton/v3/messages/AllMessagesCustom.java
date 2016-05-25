@@ -108,7 +108,7 @@ public class AllMessagesCustom implements IAllMessages {
 		}
 		File file = getFile(s);
 		if (file.exists()) {
-			messages = new MessagesMapDB(file);
+			messages = new MessagesMapDB(file, true);
 			disk.put(s, (MessagesMapDB) messages);
 			diskSecs.enqueue(s);
 			return messages;
@@ -126,7 +126,7 @@ public class AllMessagesCustom implements IAllMessages {
 			MessagesMem messages = mem.get(s);
 			copyLock.add(s);
 			executor.submit(() -> {
-				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(s));
+				MessagesMapDB messagesMapDB = new MessagesMapDB(getFile(s), false);
 				Iterable<Entry<Timestamp, Value>> values = messages.getValues();
 				for (Entry<Timestamp, Value> entry : values) {
 					messagesMapDB.put(entry.getKey(), entry.getValue());
