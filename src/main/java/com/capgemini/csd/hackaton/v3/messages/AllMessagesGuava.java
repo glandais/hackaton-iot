@@ -25,7 +25,7 @@ import com.google.common.cache.RemovalNotification;
 
 import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
-public class AllMessagesOld extends CacheLoader<Long, Messages> implements RemovalListener<Long, Messages> {
+public class AllMessagesGuava extends CacheLoader<Long, Messages> implements RemovalListener<Long, Messages>, IAllMessages {
 
 	private String dossier;
 

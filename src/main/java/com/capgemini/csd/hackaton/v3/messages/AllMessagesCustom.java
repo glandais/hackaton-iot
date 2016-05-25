@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayPriorityQueue;
 import it.unimi.dsi.fastutil.longs.LongPriorityQueues;
 import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
-public class AllMessages {
+public class AllMessagesCustom implements IAllMessages {
 
 	private static final int MAX_DISK = 2;
 
@@ -43,7 +43,7 @@ public class AllMessages {
 	private String dossier;
 
 	public static void main(String[] args) {
-		AllMessages allMessages = new AllMessages();
+		AllMessagesCustom allMessages = new AllMessagesCustom();
 		allMessages.init("D:\\tmp");
 		for (int i = 0; i < 70; i++) {
 			allMessages.get(i, true);
@@ -52,7 +52,7 @@ public class AllMessages {
 		for (int i = 0; i < 5; i++) {
 			allMessages.get(i, true);
 		}
-		//		allMessages.get(0, true);
+		// allMessages.get(0, true);
 		new Thread(() -> {
 			allMessages.get(0, true);
 		}).start();

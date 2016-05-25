@@ -3,7 +3,8 @@ package com.capgemini.csd.hackaton.v3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.capgemini.csd.hackaton.v3.messages.AllMessages;
+import com.capgemini.csd.hackaton.v3.messages.AllMessagesGuava;
+import com.capgemini.csd.hackaton.v3.messages.IAllMessages;
 import com.capgemini.csd.hackaton.v3.messages.Message;
 import com.capgemini.csd.hackaton.v3.summaries.AllSummaries;
 import com.capgemini.csd.hackaton.v3.summaries.Summaries;
@@ -14,7 +15,7 @@ public class Store {
 
 	private AllSummaries allSummaries = new AllSummaries();
 
-	private AllMessages allMessages = new AllMessages();
+	private IAllMessages allMessages = new AllMessagesGuava();
 
 	public Store() {
 		super();
