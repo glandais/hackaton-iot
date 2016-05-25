@@ -25,7 +25,7 @@ import com.google.common.cache.RemovalNotification;
 
 import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
-public class AllMessagesGuava extends CacheLoader<Long, Messages>
+public class AllMessages extends CacheLoader<Long, Messages>
 		implements RemovalListener<Long, Messages>, IAllMessages {
 
 	private String dossier;
@@ -36,7 +36,7 @@ public class AllMessagesGuava extends CacheLoader<Long, Messages>
 
 	protected Map<Long, Messages> writing = Collections.synchronizedMap(HashLongObjMaps.newMutableMap());
 
-	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS)
+	protected LoadingCache<Long, Messages> messages = CacheBuilder.newBuilder().expireAfterAccess(40, TimeUnit.SECONDS)
 			.removalListener(this).build(this);
 
 	private Set<Long> writeLock = new ConcurrentHashSet<>();

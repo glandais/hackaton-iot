@@ -3,6 +3,7 @@ package com.capgemini.csd.hackaton.v3.messages;
 import java.io.Serializable;
 
 import com.capgemini.csd.hackaton.beans.Timestamp;
+import com.capgemini.csd.hackaton.v3.Messages;
 
 public class Message implements Serializable {
 
@@ -16,12 +17,12 @@ public class Message implements Serializable {
 
 	private long value;
 
-	private long seconds;
+	private long interval;
 
 	public Message(long timestamp, int sensorType, long value, int idTs) {
 		super();
 		this.timestamp = timestamp;
-		this.seconds = timestamp / 1000;
+		this.interval = timestamp / Messages.MS_PAR_LOT;
 		this.sensorType = sensorType;
 		this.value = value;
 		this.idTs = idTs;
@@ -31,8 +32,8 @@ public class Message implements Serializable {
 		super();
 	}
 
-	public long getSecondes() {
-		return seconds;
+	public long getInterval() {
+		return interval;
 	}
 
 	public Timestamp getTs() {
@@ -45,7 +46,7 @@ public class Message implements Serializable {
 
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
-		this.seconds = timestamp / 1000;
+		this.interval = timestamp / Messages.MS_PAR_LOT;
 	}
 
 	public int getIdTs() {
