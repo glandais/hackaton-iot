@@ -72,11 +72,11 @@ Il y a deux typologies dans ce stockage :
 
 ##### Files de messages
 
-J'ai obtenu d'excellentes performances avec ChronicleQueue. Malheureusement, après un premier essai sur le Raspberry, (cette librairie n'est pas compatible avec l'architecture ARM)[https://github.com/OpenHFT/Chronicle-Queue/issues/253]...
+J'ai obtenu d'excellentes performances avec ChronicleQueue. Malheureusement, après un premier essai sur le Raspberry, [cette librairie n'est pas compatible avec l'architecture ARM](https://github.com/OpenHFT/Chronicle-Queue/issues/253)...
 
 Avec MapDB, les résultats étaient assez médiocres... Je l'avais sûrement mal configuré, car j'ai obtenu des bonnes perfs au final.
 
-Sur une (base de code)[https://github.com/flaviovdf/spiderpig/blob/master/src/br/ufmg/dcc/vod/spiderpig/common/queue/basequeues/MemoryMappedFIFOQueue.java], j'ai enfin pu créer une file assez efficace mais j'en avais plus vraiment besoin...
+Sur une [base de code](https://github.com/flaviovdf/spiderpig/blob/master/src/br/ufmg/dcc/vod/spiderpig/common/queue/basequeues/MemoryMappedFIFOQueue.java), j'ai enfin pu créer une file assez efficace mais j'en avais plus vraiment besoin...
 
 ##### Stockage persistant
 
@@ -130,7 +130,7 @@ C'est cette version qui a été utilisée pour la finale.
 ### Optimisations
 
 Paramètres JVM (GC, ...)
- - utilisation des paramètres donnés par (netty-queue)[https://github.com/mitallast/netty-queue]
+ - utilisation des paramètres donnés par [netty-queue](https://github.com/mitallast/netty-queue)
 
 Warming (JIT, HTTP)
  - démarrage d'un serveur sur un port autre que 80, envoie de 100000 messages et demande de synthèses
