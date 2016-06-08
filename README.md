@@ -52,8 +52,10 @@ On ne parlera ici que du timestamp, du sensorType et de la value. Il n'y a pas d
 #### Stockage en mémoire
 
 On stocke les message sous forme de map triée par clé :
+
  - clé : timestamp + discrimant (si deux messages dans la même milliseconde)
  - valeur : sensorType + value
+
 Ces deux éléments étant chacun composé de deux nombres entiers, j'ai dans un premier temps utilisé des UUID (deux long) plutôt que de créer mes propres structures de données.
 
 Avec Java 8, le code pour obtenir la synthèse est assez compact :
@@ -67,6 +69,7 @@ Avec Java 8, le code pour obtenir la synthèse est assez compact :
 #### Stockage persistant
 
 Il y a deux typologies dans ce stockage :
+
  - le stockage "à persister", une sorte de file de messages à indexer/stocker
  - le stockage pouvant être requêté pour les summaries
 
@@ -111,13 +114,17 @@ Globalement, les stockages sur le disque sont assez faibles pour obtenir des syn
 
 On change ici de paradigme, en travaillant sur des intervalles.
 Chaque intervalle est représenté par :
+
  - une map de messages (en mémoire ou sur le disque)
  - une synthèse
+
 Lorsqu'un message est reçu, il est ajouté à la map et à la synthèse de son intervalle.
 
 Lorsqu'une synthèse est demandée, il couvre un certain nombre d'intervalles, en totalité ou partiellement.
+
  - partiel : calcul de la synthèse sur la période demandée
  - complet : utilisation de la synthèse calculée
+
 On combine toutes ces synthèses et on obtient le bon résultat.
 
 On conserve un certain nombre d'intervalles en mémoire (LoadingCache Guava). Quand un intervalle est déchargé de la mémoire, on le laisse accessible en lecture depuis la mémoire mais on bloque en écriture tant que le fichier n'est pas terminé.
