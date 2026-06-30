@@ -8,9 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
+      - run: mvn -B -ntp -f hackaton-iot-java-client/pom.xml install
       - run: mvn -B -ntp verify
