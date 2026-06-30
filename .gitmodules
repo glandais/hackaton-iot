@@ -1,0 +1,4 @@
+[submodule "hackaton-iot-java-client"]
+	path = hackaton-iot-java-client
+	url = git@github.com:glandais/hackaton-iot-java-client.git
+	branch = master
